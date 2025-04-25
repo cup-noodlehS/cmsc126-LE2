@@ -12,13 +12,13 @@ The frontend is built with Next.js and the backend uses Django.
 This project requires running both a frontend and backend server. You'll need two terminal windows open to run both simultaneously.
 
 ### Frontend Setup
-- Navigate to the client directory and install dependencies:
+1. Navigate to the client directory and install dependencies:
     ```
     cd client
     npm install
     ```
 
-- Start the Next.js development server:
+1. Start the Next.js development server:
     ```
     npm run dev
     ```
@@ -27,12 +27,23 @@ This project requires running both a frontend and backend server. You'll need tw
     > Note: If the backend server isn't running on port 8000, update `API_URL` in `/client/.env`.
 
 ### Backend Setup
-- Navigate to the server directory:
+1. Navigate to the server directory:
     ```
     cd server
     ```
 
-- Activate the Python virtual environment:
+1. Setup venv
+    For Mac/Linux:
+    ```
+    python3 -m venv venv
+    ```
+    
+    For Windows:
+    ```
+    python -m venv venv
+    ```
+
+1. Activate the Python virtual environment:
 
     For Mac:
     ```
@@ -44,7 +55,12 @@ This project requires running both a frontend and backend server. You'll need tw
     venv\Scripts\activate
     ```
 
-- Start the Django development server:
+1. Install dependencies
+    ```
+    pip install -r requirements.txt
+    ```
+
+1. Start the Django development server:
     ```
     python src/manage.py runserver
     ```
