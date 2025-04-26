@@ -4,12 +4,20 @@ import { useState } from "react";
 import { Layout } from "../components/layout/Layout";
 import { BudgetForm } from "../components/budget/BudgetForm";
 import { useBudgets } from "../context/BudgetContext";
+import { useCategories } from "../context/CategoryContext";
 import { Budget } from "../types";
 
 export default function BudgetPage() {
   const { budgets, addBudget, updateBudget, deleteBudget } = useBudgets();
+  const { categories } = useCategories();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
+
+  const getCategoryName = (categoryId: number | undefined) => {
+    if (!categoryId) return 'N/A';
+    const category = categories.find(c => c.id === categoryId);
+    return category ? category.name : 'Unknown Category';
+  };
 
   const handleCreateBudget = () => {
     setCurrentBudget(null);
@@ -82,7 +90,7 @@ export default function BudgetPage() {
                       {budget.type === 'total' ? 'Total Budget' : 'Category Budget'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {budget.categoryId ? `Category ${budget.categoryId}` : 'N/A'}
+                      {getCategoryName(budget.categoryId)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {budget.amount.toLocaleString('en-PH', {
