@@ -13,4 +13,17 @@ export type Category = {
   id: number;
   name: string;
   color: string;
-}; 
+};
+
+export type BudgetType = 'category' | 'total';
+
+export interface Budget {
+  id: number;
+  type: BudgetType;
+  categoryId?: number; // Only for category type budgets
+  amount: number;
+  month: number;
+  year: number;
+  createdAt: string;
+  updatedAt: string;
+} 
