@@ -122,7 +122,7 @@ export default function BudgetPage() {
         />
 
         {/* Budget Summary */}
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Budget</h3>
             <p className="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -136,15 +136,6 @@ export default function BudgetPage() {
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Category Budgets</h3>
             <p className="text-2xl font-semibold text-gray-900 dark:text-white">
               {categoryBudgets.length}
-            </p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Remaining</h3>
-            <p className={`text-2xl font-semibold ${remainingBudget < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}> 
-              {remainingBudget.toLocaleString('en-PH', {
-                style: 'currency',
-                currency: 'PHP',
-              })}
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
