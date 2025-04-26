@@ -2,6 +2,7 @@
 
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
+import { mockCategories } from "../../data/mockData";
 
 // Register ChartJS components
 ChartJS.register(
@@ -33,25 +34,30 @@ const mockRecentTransactions = [
   { id: 5, title: 'Uber', amount: -22.50, date: '2023-10-12', category: 'Transportation' },
 ];
 
-// Category spending mock data
+// Category spending mock data with colors from mockCategories
+const categoryColors = mockCategories.reduce((acc, cat) => {
+  acc[cat.name] = cat.color;
+  return acc;
+}, {} as Record<string, string>);
+
 const mockCategoryData = {
   labels: ['Food', 'Utilities', 'Transportation', 'Entertainment', 'Healthcare'],
   datasets: [
     {
       data: [650, 400, 300, 200, 150],
       backgroundColor: [
-        'rgba(255, 99, 132, 0.7)',
-        'rgba(54, 162, 235, 0.7)',
-        'rgba(255, 206, 86, 0.7)',
-        'rgba(75, 192, 192, 0.7)',
-        'rgba(153, 102, 255, 0.7)',
+        categoryColors['Food'] || 'rgba(255, 99, 132, 0.7)',
+        categoryColors['Utilities'] || 'rgba(54, 162, 235, 0.7)',
+        categoryColors['Transportation'] || 'rgba(255, 206, 86, 0.7)',
+        categoryColors['Entertainment'] || 'rgba(75, 192, 192, 0.7)',
+        categoryColors['Health'] || 'rgba(153, 102, 255, 0.7)',
       ],
       borderColor: [
-        'rgba(255, 99, 132, 1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-        'rgba(75, 192, 192, 1)',
-        'rgba(153, 102, 255, 1)',
+        categoryColors['Food'] || 'rgba(255, 99, 132, 1)',
+        categoryColors['Utilities'] || 'rgba(54, 162, 235, 1)',
+        categoryColors['Transportation'] || 'rgba(255, 206, 86, 1)',
+        categoryColors['Entertainment'] || 'rgba(75, 192, 192, 1)',
+        categoryColors['Health'] || 'rgba(153, 102, 255, 1)',
       ],
       borderWidth: 1,
     },
@@ -65,7 +71,7 @@ const mockMonthlyComparisonData = {
     {
       label: 'Income',
       data: [3200, 3200, 3400, 3500],
-      backgroundColor: 'rgba(75, 192, 192, 0.7)',
+      backgroundColor: categoryColors['Income'] || 'rgba(75, 192, 192, 0.7)',
     },
     {
       label: 'Expenses',
@@ -73,6 +79,12 @@ const mockMonthlyComparisonData = {
       backgroundColor: 'rgba(255, 99, 132, 0.7)',
     },
   ],
+};
+
+// Get category color
+const getCategoryColor = (categoryName: string) => {
+  const category = mockCategories.find(cat => cat.name === categoryName);
+  return category ? category.color : "#808080"; // Default to gray if not found
 };
 
 export function Dashboard() {
@@ -153,7 +165,17 @@ export function Dashboard() {
               {mockRecentTransactions.map((transaction) => (
                 <tr key={transaction.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{transaction.title}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{transaction.category}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                    <span 
+                      className="px-2 py-1 text-xs rounded-full text-white"
+                      style={{ 
+                        backgroundColor: getCategoryColor(transaction.category),
+                        color: '#FFFFFF' 
+                      }}
+                    >
+                      {transaction.category}
+                    </span>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{new Date(transaction.date).toLocaleDateString()}</td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
                     transaction.amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'

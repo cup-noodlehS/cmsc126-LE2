@@ -1,6 +1,7 @@
 "use client";
 
 import { Transaction } from "../../types";
+import { mockCategories } from "../../data/mockData";
 
 interface TransactionsListProps {
   transactions: Transaction[];
@@ -24,6 +25,12 @@ export function TransactionsList({ transactions, onEdit }: TransactionsListProps
       style: "currency",
       currency: "PHP",
     });
+  };
+
+  // Get category color
+  const getCategoryColor = (categoryName: string) => {
+    const category = mockCategories.find(cat => cat.name === categoryName);
+    return category ? category.color : "#808080"; // Default to gray if not found
   };
 
   return (
@@ -69,7 +76,13 @@ export function TransactionsList({ transactions, onEdit }: TransactionsListProps
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    <span 
+                      className="px-2 py-1 text-xs rounded-full text-white"
+                      style={{ 
+                        backgroundColor: getCategoryColor(transaction.category),
+                        color: '#FFFFFF' 
+                      }}
+                    >
                       {transaction.category}
                     </span>
                   </td>

@@ -164,7 +164,15 @@ export function TransactionForm({ transaction, onClose }: TransactionFormProps) 
           >
             <option value="" disabled>Select a category</option>
             {mockCategories.map((cat: Category) => (
-              <option key={cat.id} value={cat.name}>
+              <option 
+                key={cat.id} 
+                value={cat.name}
+                style={{ 
+                  backgroundColor: cat.color,
+                  color: 'white',
+                  fontWeight: 'bold'
+                }}
+              >
                 {cat.name}
               </option>
             ))}
