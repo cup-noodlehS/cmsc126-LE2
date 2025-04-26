@@ -122,29 +122,6 @@ export default function BudgetPage() {
         />
 
         {/* Budget Summary */}
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Budget</h3>
-            <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-              {totalBudget.toLocaleString('en-PH', {
-                style: 'currency',
-                currency: 'PHP',
-              })}
-            </p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Category Budgets</h3>
-            <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-              {categoryBudgets.length}
-            </p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Period</h3>
-            <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-              {new Date(2000, selectedMonth - 1).toLocaleString('default', { month: 'long' })} {selectedYear}
-            </p>
-          </div>
-        </div>
         {overBudget && (
           <div className="mb-4 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded shadow">
             Warning: The sum of category budgets exceeds the total budget for this period!
