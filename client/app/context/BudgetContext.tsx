@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
-import { Budget } from "@/app/types";
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import { Budget, BudgetType } from "../types";
+import { mockBudgets } from "../data/mockData";
 
 interface BudgetContextType {
   budgets: Budget[];
@@ -15,7 +16,7 @@ interface BudgetContextType {
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
 
 export function BudgetProvider({ children }: { children: ReactNode }) {
-  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>(mockBudgets);
 
   const addBudget = (budget: Omit<Budget, 'id' | 'createdAt' | 'updatedAt'>) => {
     const newBudget: Budget = {
