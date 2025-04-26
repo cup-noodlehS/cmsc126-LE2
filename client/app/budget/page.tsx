@@ -37,6 +37,13 @@ export default function BudgetPage() {
   };
 
   const handleSaveBudget = (budget: Omit<Budget, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (budget.type === 'category') {
+      const newSum = sumCategoryBudgets + budget.amount - (currentBudget && currentBudget.type === 'category' ? currentBudget.amount : 0);
+      if (totalBudget > 0 && newSum > totalBudget) {
+        alert('Adding this category budget would exceed the total budget for this period.');
+        return;
+      }
+    }
     if (currentBudget) {
       updateBudget(currentBudget.id, budget);
     } else {
@@ -50,7 +57,12 @@ export default function BudgetPage() {
   };
 
   const filteredBudgets = getBudgetsByMonth(selectedMonth, selectedYear);
-  const totalBudget = filteredBudgets.reduce((sum, budget) => sum + budget.amount, 0);
+  const totalBudgetObj = filteredBudgets.find(b => b.type === 'total');
+  const totalBudget = totalBudgetObj ? totalBudgetObj.amount : 0;
+  const categoryBudgets = filteredBudgets.filter(b => b.type === 'category');
+  const sumCategoryBudgets = categoryBudgets.reduce((sum, b) => sum + b.amount, 0);
+  const remainingBudget = totalBudget - sumCategoryBudgets;
+  const overBudget = sumCategoryBudgets > totalBudget && totalBudget > 0;
 
   return (
     <Layout>
@@ -101,7 +113,7 @@ export default function BudgetPage() {
         </div>
 
         {/* Budget Summary */}
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Budget</h3>
             <p className="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -114,7 +126,16 @@ export default function BudgetPage() {
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
             <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Category Budgets</h3>
             <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-              {filteredBudgets.filter(b => b.type === 'category').length}
+              {categoryBudgets.length}
+            </p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Remaining</h3>
+            <p className={`text-2xl font-semibold ${remainingBudget < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}> 
+              {remainingBudget.toLocaleString('en-PH', {
+                style: 'currency',
+                currency: 'PHP',
+              })}
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
@@ -124,6 +145,11 @@ export default function BudgetPage() {
             </p>
           </div>
         </div>
+        {overBudget && (
+          <div className="mb-4 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded shadow">
+            Warning: The sum of category budgets exceeds the total budget for this period!
+          </div>
+        )}
 
         {/* Budget List */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
