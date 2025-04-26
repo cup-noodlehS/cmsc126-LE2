@@ -15,6 +15,8 @@ export type Category = {
   color: string;
 };
 
+// Budget Types
+
 export type BudgetType = 'category' | 'total';
 
 export interface Budget {
