@@ -63,10 +63,13 @@ export default function CategoriesPage() {
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Color
+                    Name
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Name
+                    Expenses
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Income
                   </th>
                   <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Actions
@@ -76,12 +79,6 @@ export default function CategoriesPage() {
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {categories.map((category: Category) => (
                   <tr key={category.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div 
-                        className="w-8 h-8 rounded-full" 
-                        style={{ backgroundColor: category.color }}
-                      ></div>
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       <span 
                         className="px-3 py-1.5 text-xs rounded-full text-white"
@@ -92,6 +89,14 @@ export default function CategoriesPage() {
                       >
                         {category.name}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {/* Placeholder for total expenses */}
+                      $5.00 (5)
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {/* Placeholder for total income */}
+                      $200.00 (10)
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
@@ -109,6 +114,41 @@ export default function CategoriesPage() {
                     </td>
                   </tr>
                 ))}
+                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      <span 
+                        className="px-3 py-1.5 text-xs rounded-full text-white"
+                        style={{ 
+                          backgroundColor: '#808080',
+                          color: '#FFFFFF' 
+                        }}
+                      >
+                        No Category
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {/* Placeholder for total expenses */}
+                      $5.00 (5)
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {/* Placeholder for total income */}
+                      $200.00 (10)
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      {/* <button
+                        onClick={() => handleEditCategory(category)}
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCategory(category.id)}
+                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                      >
+                        Delete
+                      </button> */}
+                    </td>
+                  </tr>
               </tbody>
             </table>
           </div>
