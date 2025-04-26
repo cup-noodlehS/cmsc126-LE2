@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Budget, BudgetType } from "@/app/types";
-import { useCategories } from "@/app/context/CategoryContext";
+import { useState, useEffect } from "react";
+import { Budget, BudgetType, Category } from "../../types";
+import { useCategories } from "../../context/CategoryContext";
 
 interface BudgetFormProps {
   initialData?: Budget;
@@ -12,18 +12,25 @@ interface BudgetFormProps {
 
 export function BudgetForm({ initialData, onSubmit, onCancel }: BudgetFormProps) {
   const { categories } = useCategories();
-  const [type, setType] = useState<BudgetType>(initialData?.type || 'total');
+  const [type, setType] = useState<BudgetType>(initialData?.type || "total");
   const [categoryId, setCategoryId] = useState<number | undefined>(initialData?.categoryId);
-  const [amount, setAmount] = useState<number>(initialData?.amount || 0);
-  const [month, setMonth] = useState<number>(initialData?.month || new Date().getMonth() + 1);
-  const [year, setYear] = useState<number>(initialData?.year || new Date().getFullYear());
+  const [amount, setAmount] = useState(initialData?.amount?.toString() || "");
+  const [month, setMonth] = useState(initialData?.month || new Date().getMonth() + 1);
+  const [year, setYear] = useState(initialData?.year || new Date().getFullYear());
+
+  useEffect(() => {
+    if (type === "total") {
+      setCategoryId(undefined);
+    }
+  }, [type]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!amount || isNaN(Number(amount))) return;
     onSubmit({
       type,
-      categoryId: type === 'category' ? categoryId : undefined,
-      amount,
+      categoryId: type === "category" ? categoryId : undefined,
+      amount: Number(amount),
       month,
       year,
     });
@@ -31,87 +38,96 @@ export function BudgetForm({ initialData, onSubmit, onCancel }: BudgetFormProps)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Type Toggle */}
       <div>
-        <label htmlFor="type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Budget Type
-        </label>
-        <select
-          id="type"
-          value={type}
-          onChange={(e) => setType(e.target.value as BudgetType)}
-          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-        >
-          <option value="total">Total Budget</option>
-          <option value="category">Category Budget</option>
-        </select>
-      </div>
-
-      {type === 'category' && (
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-sm font-medium text-gray-200 mb-1">Budget Type</label>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className={`flex-1 px-4 py-2 rounded-md font-semibold transition-colors ${type === 'total' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+            onClick={() => setType('total')}
+          >
+            Total
+          </button>
+          <button
+            type="button"
+            className={`flex-1 px-4 py-2 rounded-md font-semibold transition-colors ${type === 'category' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+            onClick={() => setType('category')}
+          >
             Category
-          </label>
-          <select
-            id="category"
-            value={categoryId}
-            onChange={(e) => setCategoryId(Number(e.target.value))}
-            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option value="">Select a category</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+          </button>
         </div>
-      )}
-
-      <div>
-        <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Amount
-        </label>
-        <input
-          type="number"
-          id="amount"
-          value={amount}
-          onChange={(e) => setAmount(Number(e.target.value))}
-          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-          min="0"
-          step="0.01"
-          required
-        />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="month" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Month
-          </label>
+      {/* Category Dropdown or Placeholder */}
+      <div>
+        <label className="block text-sm font-medium text-gray-200 mb-1">Category</label>
+        {type === 'category' ? (
           <select
-            id="month"
-            value={month}
-            onChange={(e) => setMonth(Number(e.target.value))}
-            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            value={categoryId ?? ''}
+            onChange={e => setCategoryId(Number(e.target.value))}
+            required
           >
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-              <option key={m} value={m}>
-                {new Date(2000, m - 1).toLocaleString('default', { month: 'long' })}
-              </option>
+            <option value="" disabled>Select a category</option>
+            {categories.map((cat: Category) => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
           </select>
-        </div>
+        ) : (
+          <input
+            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-gray-400 cursor-not-allowed"
+            value="Total"
+            disabled
+          />
+        )}
+      </div>
 
-        <div>
-          <label htmlFor="year" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Year
-          </label>
+      {/* Amount */}
+      <div>
+        <label className="block text-sm font-medium text-gray-200 mb-1">Amount</label>
+        <div className="mt-1 relative rounded-md shadow-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span className="text-gray-500 dark:text-gray-400 sm:text-sm">₱</span>
+          </div>
           <input
             type="number"
-            id="year"
+            min="0.01"
+            step="0.01"
+            className="block w-full pl-7 pr-12 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            placeholder="0.00"
+            required
+          />
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <span className="text-gray-500 dark:text-gray-400 sm:text-sm">PHP</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Date (Month/Year) */}
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-gray-200 mb-1">Month</label>
+          <select
+            className="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
+            value={month}
+            onChange={e => setMonth(Number(e.target.value))}
+            required
+          >
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+              <option key={m} value={m}>{new Date(2000, m - 1).toLocaleString('default', { month: 'long' })}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-gray-200 mb-1">Year</label>
+          <input
+            type="number"
+            className="block w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-gray-800 text-white"
             value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-            className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            onChange={e => setYear(Number(e.target.value))}
             min="2000"
             max="2100"
             required
@@ -119,19 +135,20 @@ export function BudgetForm({ initialData, onSubmit, onCancel }: BudgetFormProps)
         </div>
       </div>
 
-      <div className="flex justify-end space-x-3">
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-2 mt-6">
         <button
           type="button"
+          className="px-4 py-2 rounded-md bg-gray-700 text-gray-200 hover:bg-gray-600 transition-colors"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
         >
-          {initialData ? 'Update' : 'Create'} Budget
+          {initialData ? 'Save Changes' : 'Add Budget'}
         </button>
       </div>
     </form>
