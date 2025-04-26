@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { mockCategories } from "../../data/mockData";
 import { Transaction, Category } from "../../types";
+import { CategoryForm } from "@/app/components/categories/CategoryForm";
+import { useCategories } from "@/app/context/CategoryContext";
 
 interface TransactionFormProps {
   transaction?: Transaction | null;
@@ -17,6 +18,10 @@ export function TransactionForm({ transaction, onClose }: TransactionFormProps) 
   const [category, setCategory] = useState("");
   const [notes, setNotes] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  
+  // Get categories from context instead of mock data
+  const { categories, addCategory } = useCategories();
   
   // Initialize form with transaction data if editing
   useEffect(() => {
@@ -57,6 +62,26 @@ export function TransactionForm({ transaction, onClose }: TransactionFormProps) 
     
     // Close form
     onClose();
+  };
+
+  // Handle opening the category modal
+  const handleOpenCategoryModal = () => {
+    setIsCategoryModalOpen(true);
+  };
+
+  // Handle closing the category modal
+  const handleCloseCategoryModal = () => {
+    setIsCategoryModalOpen(false);
+  };
+
+  // Handle saving a new category
+  const handleSaveCategory = (newCategory: Category) => {
+    addCategory({
+      name: newCategory.name,
+      color: newCategory.color,
+    });
+    setCategory(newCategory.name);
+    setIsCategoryModalOpen(false);
   };
 
   return (
@@ -155,28 +180,37 @@ export function TransactionForm({ transaction, onClose }: TransactionFormProps) 
           <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Category
           </label>
-          <select
-            id="category"
-            required
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          >
-            <option value="" disabled>Select a category</option>
-            {mockCategories.map((cat: Category) => (
-              <option 
-                key={cat.id} 
-                value={cat.name}
-                style={{ 
-                  backgroundColor: cat.color,
-                  color: 'white',
-                  fontWeight: 'bold'
-                }}
-              >
-                {cat.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex gap-2">
+            <select
+              id="category"
+              required
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            >
+              <option value="" disabled>Select a category</option>
+              {categories.map((cat: Category) => (
+                <option 
+                  key={cat.id} 
+                  value={cat.name}
+                  style={{ 
+                    backgroundColor: cat.color,
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={handleOpenCategoryModal}
+              className="mt-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              New
+            </button>
+          </div>
         </div>
 
         {/* Notes */}
@@ -211,6 +245,22 @@ export function TransactionForm({ transaction, onClose }: TransactionFormProps) 
           </button>
         </div>
       </div>
+
+      {/* Category Modal */}
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Create New Category
+            </h2>
+            <CategoryForm 
+              category={null} 
+              onSave={handleSaveCategory} 
+              onCancel={handleCloseCategoryModal} 
+            />
+          </div>
+        </div>
+      )}
     </form>
   );
 } 
