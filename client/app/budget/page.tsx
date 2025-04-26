@@ -12,8 +12,8 @@ export default function BudgetPage() {
   const { categories } = useCategories();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(3); // March
+  const [selectedYear, setSelectedYear] = useState(2025);
 
   const getCategoryInfo = (categoryId: number | undefined) => {
     if (!categoryId) return { name: 'N/A', color: '#808080' };
