@@ -6,6 +6,7 @@ import { BudgetForm } from "../components/budget/BudgetForm";
 import { useBudgets } from "../context/BudgetContext";
 import { useCategories } from "../context/CategoryContext";
 import { Budget } from "../types";
+import { BudgetProgressBar } from "../components/budget/BudgetProgressBar";
 
 export default function BudgetPage() {
   const { budgets, addBudget, updateBudget, deleteBudget, getBudgetsByMonth } = useBudgets();
@@ -111,6 +112,14 @@ export default function BudgetPage() {
             />
           </div>
         </div>
+
+        {/* Progress Bar */}
+        <BudgetProgressBar
+          totalBudget={totalBudget}
+          categoryBudgets={categoryBudgets}
+          categories={categories}
+          remaining={remainingBudget}
+        />
 
         {/* Budget Summary */}
         <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
