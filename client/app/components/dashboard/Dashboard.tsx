@@ -85,17 +85,17 @@ export function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <SummaryCard
           title="Monthly Income"
-          value={`$${mockMonthlyData.income.toLocaleString()}`}
+          value={`₱${mockMonthlyData.income.toLocaleString()}`}
           type="income"
         />
         <SummaryCard
           title="Monthly Expenses"
-          value={`$${mockMonthlyData.expenses.toLocaleString()}`}
+          value={`₱${mockMonthlyData.expenses.toLocaleString()}`}
           type="expense"
         />
         <SummaryCard
           title="Balance"
-          value={`$${mockMonthlyData.balance.toLocaleString()}`}
+          value={`₱${mockMonthlyData.balance.toLocaleString()}`}
           type={mockMonthlyData.balance >= 0 ? "positive" : "negative"}
         />
       </div>
@@ -158,9 +158,9 @@ export function Dashboard() {
                   <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
                     transaction.amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                   }`}>
-                    {transaction.amount >= 0 ? '+' : ''}{transaction.amount.toLocaleString('en-US', {
+                    {transaction.amount >= 0 ? '+' : ''}{transaction.amount.toLocaleString('en-PH', {
                       style: 'currency',
-                      currency: 'USD',
+                      currency: 'PHP',
                     })}
                   </td>
                 </tr>

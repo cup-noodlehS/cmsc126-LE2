@@ -116,7 +116,7 @@ export function TransactionForm({ transaction, onClose }: TransactionFormProps) 
           </label>
           <div className="mt-1 relative rounded-md shadow-sm">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 dark:text-gray-400 sm:text-sm">$</span>
+              <span className="text-gray-500 dark:text-gray-400 sm:text-sm">₱</span>
             </div>
             <input
               type="number"
@@ -130,7 +130,7 @@ export function TransactionForm({ transaction, onClose }: TransactionFormProps) 
               placeholder="0.00"
             />
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 dark:text-gray-400 sm:text-sm">USD</span>
+              <span className="text-gray-500 dark:text-gray-400 sm:text-sm">PHP</span>
             </div>
           </div>
         </div>

@@ -20,9 +20,9 @@ export function TransactionsList({ transactions, onEdit }: TransactionsListProps
 
   // Format currency function
   const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("en-US", {
+    return amount.toLocaleString("en-PH", {
       style: "currency",
-      currency: "USD",
+      currency: "PHP",
     });
   };
 
