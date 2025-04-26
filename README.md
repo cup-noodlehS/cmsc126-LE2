@@ -6,6 +6,9 @@
 - Python (v3.8 or higher)
 - pip
 
+## Links
+- [DB Model](https://lucid.app/lucidchart/5ab4801f-b1ce-4743-b0e5-b6d24caae0aa/edit?viewport_loc=-1087%2C942%2C1345%2C1023%2C0_0&invitationId=inv_652a4829-a71a-4cbb-bdb8-cd4eb45aadfa)
+
 The frontend is built with Next.js and the backend uses Django.
 
 ## ✅ Feature To-Do List
