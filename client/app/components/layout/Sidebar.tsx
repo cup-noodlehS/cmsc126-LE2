@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ThemeToggle } from "../ui/ThemeToggle";
 import { useState } from "react";
 
 const navigation = [
@@ -71,9 +70,8 @@ export function Sidebar() {
             </ul>
           </nav>
           
-          <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Theme</span>
-            <ThemeToggle />
+          <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+            <div className="text-sm text-gray-500 dark:text-gray-400">Using system theme preferences</div>
           </div>
         </div>
       </aside>
