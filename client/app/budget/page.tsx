@@ -8,10 +8,12 @@ import { useCategories } from "../context/CategoryContext";
 import { Budget } from "../types";
 
 export default function BudgetPage() {
-  const { budgets, addBudget, updateBudget, deleteBudget } = useBudgets();
+  const { budgets, addBudget, updateBudget, deleteBudget, getBudgetsByMonth } = useBudgets();
   const { categories } = useCategories();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   const getCategoryInfo = (categoryId: number | undefined) => {
     if (!categoryId) return { name: 'N/A', color: '#808080' };
@@ -47,6 +49,9 @@ export default function BudgetPage() {
     deleteBudget(id);
   };
 
+  const filteredBudgets = getBudgetsByMonth(selectedMonth, selectedYear);
+  const totalBudget = filteredBudgets.reduce((sum, budget) => sum + budget.amount, 0);
+
   return (
     <Layout>
       <div className="p-6">
@@ -58,6 +63,66 @@ export default function BudgetPage() {
           >
             Add Budget
           </button>
+        </div>
+
+        {/* Month/Year Filter */}
+        <div className="mb-6 grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="month" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Month
+            </label>
+            <select
+              id="month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            >
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                <option key={m} value={m}>
+                  {new Date(2000, m - 1).toLocaleString('default', { month: 'long' })}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="year" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Year
+            </label>
+            <input
+              type="number"
+              id="year"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              min="2000"
+              max="2100"
+            />
+          </div>
+        </div>
+
+        {/* Budget Summary */}
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Budget</h3>
+            <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+              {totalBudget.toLocaleString('en-PH', {
+                style: 'currency',
+                currency: 'PHP',
+              })}
+            </p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Category Budgets</h3>
+            <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+              {filteredBudgets.filter(b => b.type === 'category').length}
+            </p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Period</h3>
+            <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+              {new Date(2000, selectedMonth - 1).toLocaleString('default', { month: 'long' })} {selectedYear}
+            </p>
+          </div>
         </div>
 
         {/* Budget List */}
@@ -84,7 +149,7 @@ export default function BudgetPage() {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {budgets.map((budget) => {
+                {filteredBudgets.map((budget) => {
                   const categoryInfo = getCategoryInfo(budget.categoryId);
                   return (
                     <tr key={budget.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
