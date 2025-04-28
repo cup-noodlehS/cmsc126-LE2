@@ -1,7 +1,7 @@
 from main.utils import GenericView
 from main.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.db.models import Sum
+from django.db.models import Sum, Q
 
 from budgethink.models import Category, Transaction, Budget
 from budgethink.serializers.serializer import (
@@ -24,6 +24,14 @@ class TransactionView(GenericView):
     serializer_class = TransactionSerializer
     queryset = Transaction.objects.all()
     permission_classes = [IsAuthenticated]
+
+    def filter_queryset(self, filters, excludes):
+        search = filters.pop("search", None)
+        if search:
+            self.queryset = self.queryset.filter(
+                Q(title__icontains=search) | Q(description__icontains=search)
+            )
+        return super().filter_queryset(filters, excludes)
 
     def dashboard_endpoint(self, request):
         try:
