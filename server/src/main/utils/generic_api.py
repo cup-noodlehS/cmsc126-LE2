@@ -114,7 +114,7 @@ class GenericView(viewsets.ViewSet):
         if "update" not in self.allowed_methods:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-        instance = get_object_or_404(self.queryset, pk=pk)
+        instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.pre_update(request, instance)
 
         if "*" not in self.allowed_update_fields:
@@ -140,7 +140,7 @@ class GenericView(viewsets.ViewSet):
         if "delete" not in self.allowed_methods:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-        instance = get_object_or_404(self.queryset, pk=pk)
+        instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.delete_cache(pk)
         self.invalidate_list_cache()
         self.pre_destroy(instance)
@@ -247,7 +247,7 @@ class GenericView(viewsets.ViewSet):
     def filter_queryset(self, filters, excludes):
         filter_q = Q(**filters)
         exclude_q = Q(**excludes)
-        return self.queryset.filter(filter_q).exclude(exclude_q)
+        return self.get_queryset().filter(filter_q).exclude(exclude_q)
 
     def filter(self, request, filters, excludes, top, bottom, order_by=None):
         queryset = self.filter_queryset(filters, excludes)
@@ -273,5 +273,8 @@ class GenericView(viewsets.ViewSet):
         return Response(data, status=status.HTTP_200_OK)
 
     def get_serialized_object(self, pk):
-        instance = get_object_or_404(self.queryset, pk=pk)
+        instance = get_object_or_404(self.get_queryset(), pk=pk)
         return self.serializer_class(instance).data
+
+    def get_queryset(self):
+        return self.queryset
