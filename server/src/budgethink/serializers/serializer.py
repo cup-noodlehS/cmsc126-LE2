@@ -1,4 +1,8 @@
-from budgethink.serializers.base_serializer import BaseCategorySerializer, BaseTransactionSerializer, BaseBudgetSerializer
+from budgethink.serializers.base_serializer import (
+    BaseCategorySerializer,
+    BaseTransactionSerializer,
+    BaseBudgetSerializer,
+)
 from account.serializers import UserBaseSerializer
 
 
@@ -14,5 +18,3 @@ class TransactionSerializer(BaseTransactionSerializer):
 class BudgetSerializer(BaseBudgetSerializer):
     user = UserBaseSerializer(read_only=True)
     category = BaseCategorySerializer(read_only=True)
-
-

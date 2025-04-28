@@ -8,17 +8,18 @@ from django.utils.translation import gettext_lazy as _
 class User(AbstractUser):
     """
     Custom user model that extends Django's AbstractUser.
-    
+
     This model adds additional fields for user profiles including contact information,
     profile picture, and location. It overrides the email field to make it unique.
     """
+
     email = models.EmailField(
         unique=True,
         validators=[EmailValidator()],
         verbose_name=_("Email address"),
-        help_text=_("Required. Must be a valid email address.")
+        help_text=_("Required. Must be a valid email address."),
     )
-    
+
     # Override related_name to avoid clashes with auth.User
     groups = models.ManyToManyField(
         "auth.Group",
@@ -42,26 +43,28 @@ class User(AbstractUser):
         validators=[
             RegexValidator(
                 regex=r"^\+?1?\d{9,15}$",
-                message=_("Phone number must be entered in format: '+999999999'. Up to 15 digits allowed."),
+                message=_(
+                    "Phone number must be entered in format: '+999999999'. Up to 15 digits allowed."
+                ),
             )
         ],
         verbose_name=_("Phone number"),
-        help_text=_("International format preferred: +[country code][number]")
+        help_text=_("International format preferred: +[country code][number]"),
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    REQUIRED_FIELDS = ["first_name", "last_name"]
 
     class Meta:
         app_label = "account"
         verbose_name = _("User")
         verbose_name_plural = _("Users")
-        ordering = ['-date_joined']
+        ordering = ["-date_joined"]
         indexes = [
-            models.Index(fields=['email']),
-            models.Index(fields=['username']),
+            models.Index(fields=["email"]),
+            models.Index(fields=["username"]),
         ]
 
     @property
@@ -76,11 +79,11 @@ class User(AbstractUser):
         # Hash password if it's not already hashed
         if self.password and not self.password.startswith("pbkdf2_sha256$"):
             self.password = make_password(self.password)
-            
+
         # Normalize email to lowercase
         if self.email:
             self.email = self.email.lower()
-            
+
         super().save(*args, **kwargs)
 
     def __str__(self):
