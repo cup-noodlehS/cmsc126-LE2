@@ -210,20 +210,17 @@ class Command(BaseCommand):
         # Bulk create transactions
         Transaction.objects.bulk_create(transactions)
 
-        # Create monthly budgets
+        # Create budgets
         budgets = []
-        current_date = start_date
-        while current_date <= today:
-            for category in category_objects:
-                if category.name not in ['Salary', 'Freelance', 'Investments']:
-                    budget = Budget(
-                        user=user,
-                        category=category,
-                        name=f"{category.name} Budget - {current_date.strftime('%B %Y')}",
-                        amount_limit=Decimal(random.uniform(1000, 10000)).quantize(Decimal('0.01'))
-                    )
-                    budgets.append(budget)
-            current_date += timedelta(days=30)  # Move to next month
+        for category in category_objects:
+            if category.name not in ['Salary', 'Freelance', 'Investments']:
+                budget = Budget(
+                    user=user,
+                    category=category,
+                    name=f"{category.name} Budget",
+                    amount_limit=Decimal(random.uniform(1000, 10000)).quantize(Decimal('0.01'))
+                )
+                budgets.append(budget)
 
         # Bulk create budgets
         Budget.objects.bulk_create(budgets)

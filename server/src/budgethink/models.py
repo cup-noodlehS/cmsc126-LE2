@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from decimal import Decimal
+from django.db.models import Sum
 
 User = get_user_model()
 
@@ -10,9 +11,33 @@ class Category(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     hex_color = models.CharField(max_length=7, null=True, blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="categories")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def transactions_count(self):
+        return self.transactions.count()
+    
+    @property
+    def income_count(self):
+        return self.transactions.filter(type="income").count()
+    
+    @property
+    def expense_count(self):
+        return self.transactions.filter(type="expense").count()
+
+    @property
+    def total_income(self):
+        return self.transactions.filter(type="income").aggregate(total=Sum("amount"))["total"] or 0
+
+    @property
+    def total_expense(self):
+        return self.transactions.filter(type="expense").aggregate(total=Sum("amount"))["total"] or 0
+    
+    @property
+    def total_balance(self):
+        return self.total_income - self.total_expense
 
     class Meta:
         verbose_name = "Category"
@@ -35,9 +60,9 @@ class Transaction(models.Model):
     ]
 
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, null=True, blank=True
+        Category, on_delete=models.SET_NULL, null=True, blank=True, related_name="transactions"
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="transactions")
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     type = models.CharField(
@@ -71,9 +96,9 @@ class Transaction(models.Model):
 
 
 class Budget(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, null=True, blank=True
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="budgets")
+    category = models.OneToOneField(
+        Category, on_delete=models.SET_NULL, null=True, blank=True, related_name="budgets"
     )
     name = models.CharField(max_length=255)
     amount_limit = models.DecimalField(
