@@ -16,7 +16,7 @@ class CategoryView(GenericView):
     queryset = Category.objects.all()
     permission_classes = [IsAuthenticated]
 
-    def initialize_queryset(self):
+    def initialize_queryset(self, request):
         self.queryset = self.queryset.filter(user=self.request.user)
 
 
@@ -104,7 +104,7 @@ class TransactionView(GenericView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
-    def initialize_queryset(self):
+    def initialize_queryset(self, request):
         self.queryset = self.queryset.filter(user=self.request.user)
 
 
@@ -113,5 +113,5 @@ class BudgetView(GenericView):
     queryset = Budget.objects.all()
     permission_classes = [IsAuthenticated]
 
-    def initialize_queryset(self):
+    def initialize_queryset(self, request):
         self.queryset = self.queryset.filter(user=self.request.user)
