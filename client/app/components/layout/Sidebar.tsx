@@ -44,7 +44,7 @@ export function Sidebar() {
       >
         <div className="h-full flex flex-col">
           <div className="px-4 py-6 border-b border-gray-200 dark:border-gray-800">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Budget Tracker</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">BudgeThink</h1>
           </div>
           
           <nav className="flex-1 overflow-y-auto p-4">

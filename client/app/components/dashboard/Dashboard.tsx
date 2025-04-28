@@ -96,12 +96,12 @@ export function Dashboard() {
       {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <SummaryCard
-          title="Monthly Income"
+          title="Income"
           value={`₱${mockMonthlyData.income.toLocaleString()}`}
           type="income"
         />
         <SummaryCard
-          title="Monthly Expenses"
+          title="Expenses"
           value={`₱${mockMonthlyData.expenses.toLocaleString()}`}
           type="expense"
         />
