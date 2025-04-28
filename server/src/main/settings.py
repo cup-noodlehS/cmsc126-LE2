@@ -37,16 +37,25 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    "main",
+    "account",
 ]
 
+# Custom user model
+AUTH_USER_MODEL = "account.User"
+
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "account.middleware.JWTAuthMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 ROOT_URLCONF = 'main.urls'
@@ -78,6 +87,17 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.getenv("DB_NAME") or "haircat",
+#         "USER": os.getenv("DB_USER") or "haircatuser",
+#         "PASSWORD": os.getenv("DB_PASSWORD") or "password",
+#         "HOST": os.getenv("DB_HOST") or "localhost",
+#         "PORT": os.getenv("DB_PORT") or "5432",
+#     }
+# }
 
 
 # Password validation
@@ -120,3 +140,31 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Rest framework settings
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "40/hour",
+    },
+}
+
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",  # Your frontend development server
+#     "https://app.tranches.com",
+#     "https://staging.tranches.com",
+#     "https://q9vm73uaem.us-east-1.awsapprunner.com",
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Optional: If you need to allow credentials (cookies, authorization headers)
+CORS_ALLOW_CREDENTIALS = True
+
+# CSRF_TRUSTED_ORIGINS = [
+#     'https://q9vm73uaem.us-east-1.awsapprunner.com',
+#     'https://app.tranches.com',
+#     'https://staging.tranches.com',
+# ]
