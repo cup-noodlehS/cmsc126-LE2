@@ -150,30 +150,32 @@ export default function CategoriesPage() {
                       </td>
                     </tr>
                   ))}
-                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      <span 
-                        className="px-3 py-1.5 text-xs rounded-full"
-                        style={{ 
-                          backgroundColor: '#808080',
-                          color: getContrastTextColor('#808080')
-                        }}
-                      >
-                        No Category
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {/* Placeholder for total expenses */}
-                      $0.00 (0)
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {/* Placeholder for total income */}
-                      $0.00 (0)
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {/* No actions for "No Category" */}
-                    </td>
-                  </tr>
+                  {categories.length === 0 && (
+                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                        <span 
+                          className="px-3 py-1.5 text-xs rounded-full"
+                          style={{ 
+                            backgroundColor: '#808080',
+                            color: getContrastTextColor('#808080')
+                          }}
+                        >
+                          No Category
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {/* Placeholder for total expenses */}
+                        $0.00 (0)
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {/* Placeholder for total income */}
+                        $0.00 (0)
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        {/* No actions for "No Category" */}
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
