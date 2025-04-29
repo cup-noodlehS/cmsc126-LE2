@@ -1,11 +1,16 @@
 import React from "react";
 import { Budget, Category } from "../../app/types";
+import { mockTransactions } from "../../app/data/mockData";
 
 interface BudgetProgressBarProps {
   totalBudget: number;
   categoryBudgets: Budget[];
   categories: Category[];
   remaining: number;
+}
+
+interface CategoryExpenses {
+  [key: string]: number;
 }
 
 export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, remaining }: BudgetProgressBarProps) {
@@ -15,13 +20,52 @@ export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, re
     return cat ? cat.color : "#808080";
   };
 
+  const getCategoryName = (categoryId: number | undefined) => {
+    const cat = categories.find(c => c.id === categoryId);
+    return cat ? cat.name : "Unknown";
+  };
+
+  // Calculate expenses for each category for the current month and year
+  const calculateCategoryExpenses = () => {
+    const expenses: CategoryExpenses = {};
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-based
+    const currentYear = currentDate.getFullYear();
+
+    mockTransactions.forEach(transaction => {
+      if (transaction.amount < 0) { // Only consider expenses (negative amounts)
+        const transactionDate = new Date(transaction.date);
+        const transactionMonth = transactionDate.getMonth() + 1;
+        const transactionYear = transactionDate.getFullYear();
+
+        if (transactionMonth === currentMonth && transactionYear === currentYear) {
+          const categoryName = transaction.category;
+          if (!expenses[categoryName]) {
+            expenses[categoryName] = 0;
+          }
+          expenses[categoryName] += Math.abs(transaction.amount);
+        }
+      }
+    });
+    return expenses;
+  };
+
+  const categoryExpenses = calculateCategoryExpenses();
+
   const segments = categoryBudgets.map((budget) => {
     const width = totalBudget > 0 ? (budget.amount / totalBudget) * 100 : 0;
+    const categoryName = getCategoryName(budget.categoryId);
+    const expenses = categoryExpenses[categoryName] || 0;
+    const expensePercentage = budget.amount > 0 ? (expenses / budget.amount) * 100 : 0;
+
     return {
       key: budget.id,
       width: `${width}%`,
       color: getCategoryColor(budget.categoryId),
-      name: categories.find(c => c.id === budget.categoryId)?.name || "Category"
+      name: categoryName,
+      budget: budget.amount,
+      expenses,
+      expensePercentage: Math.min(expensePercentage, 100)
     };
   });
 
@@ -45,6 +89,8 @@ export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, re
         </div>
       </div>
       <hr className="my-3 border-gray-300 dark:border-gray-700" />
+      
+      {/* Main progress bar */}
       <div className="flex w-full h-10 rounded-xl overflow-hidden shadow border border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-700">
         {segments.map((seg, idx) => (
           <div
@@ -73,20 +119,31 @@ export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, re
           />
         )}
       </div>
-      <hr className="my-3 border-gray-300 dark:border-gray-700" />
-      <div className="flex flex-wrap gap-2 mt-2 text-xs text-gray-700 dark:text-gray-300">
-        {segments.map(seg => (
-          <span key={seg.key} className="flex items-center gap-1">
-            <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: seg.color }} />
-            {seg.name}
-          </span>
+
+      {/* Category sub-progress bars */}
+      <div className="mt-6 space-y-4">
+        {segments.map((seg) => (
+          <div key={seg.key} className="space-y-1">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <span className="inline-block w-3 h-3 rounded-full" style={{ backgroundColor: seg.color }} />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{seg.name}</span>
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                {seg.expenses.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })} of {seg.budget.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}
+              </div>
+            </div>
+            <div className="w-full h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+              <div
+                className="h-full transition-all duration-300"
+                style={{
+                  width: `${seg.expensePercentage}%`,
+                  backgroundColor: seg.color,
+                }}
+              />
+            </div>
+          </div>
         ))}
-        {remaining > 0 && (
-          <span className="flex items-center gap-1">
-            <span className="inline-block w-3 h-3 rounded-full bg-gray-400 dark:bg-gray-500" />
-            Remaining
-          </span>
-        )}
       </div>
     </div>
   );
