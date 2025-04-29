@@ -8,6 +8,7 @@ import { mockCategories } from "../../app/data/mockData";
 import { useAuthStore } from "@/lib/stores/auth";
 import { fetchDashboard } from "@/lib/stores/budgethink";
 import { DashboardReadInterface } from "@/lib/types/budgethink";
+import { useCategoriesStore } from "@/lib/stores/categories";
 
 // Register ChartJS components
 ChartJS.register(
@@ -47,6 +48,7 @@ const getContrastTextColor = (hexColor: string): string => {
 
 export function Dashboard() {
   const { user } = useAuthStore();
+  const { categories, fetchCategories } = useCategoriesStore();
   const [dashboardData, setDashboardData] = useState<DashboardReadInterface | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,8 +68,18 @@ export function Dashboard() {
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    // Fetch dashboard data and categories
+    Promise.all([
+      fetchDashboardData(),
+      fetchCategories()
+    ]);
   }, []);
+
+  // Function to get category color from our categories store
+  const getCategoryColorFromStore = (categoryName: string): string => {
+    const category = categories.find(cat => cat.name === categoryName);
+    return category ? category.hex_color : "#808080"; // Default to gray if not found
+  };
 
   // Prepare category data for pie chart
   const categoryData = {
@@ -76,10 +88,12 @@ export function Dashboard() {
       {
         data: dashboardData?.categories.map(cat => cat.total) || [],
         backgroundColor: dashboardData?.categories.map(cat => {
-          const categoryColor = getCategoryColor(cat.category__name);
-          return categoryColor.replace('1)', '0.7)'); // Make slightly transparent
+          // Try to find the color in the categories store first
+          const categoryColor = getCategoryColorFromStore(cat.category__name);
+          // Make slightly transparent
+          return categoryColor.includes('rgba') ? categoryColor : `${categoryColor}CC`;
         }) || [],
-        borderColor: dashboardData?.categories.map(cat => getCategoryColor(cat.category__name)) || [],
+        borderColor: dashboardData?.categories.map(cat => getCategoryColorFromStore(cat.category__name)) || [],
         borderWidth: 1,
       },
     ],
@@ -92,7 +106,7 @@ export function Dashboard() {
       {
         label: 'Income',
         data: dashboardData?.income_vs_expenses.map(month => month.income).reverse() || [],
-        backgroundColor: getCategoryColor('Income') || 'rgba(75, 192, 192, 0.7)',
+        backgroundColor: 'rgba(75, 192, 192, 0.7)',
       },
       {
         label: 'Expenses',
