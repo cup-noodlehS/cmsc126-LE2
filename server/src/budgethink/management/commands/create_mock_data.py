@@ -18,18 +18,18 @@ class Command(BaseCommand):
             'password': 'testpass123'
         })
 
-        # Create categories
+        # Create categories with hex colors
         categories = [
-            {'name': 'Food & Dining', 'description': 'Groceries, restaurants, and food delivery'},
-            {'name': 'Transportation', 'description': 'Public transport, fuel, and car maintenance'},
-            {'name': 'Housing', 'description': 'Rent, utilities, and home maintenance'},
-            {'name': 'Entertainment', 'description': 'Movies, games, and leisure activities'},
-            {'name': 'Shopping', 'description': 'Clothing, electronics, and other purchases'},
-            {'name': 'Healthcare', 'description': 'Medical expenses and insurance'},
-            {'name': 'Education', 'description': 'Books, courses, and educational materials'},
-            {'name': 'Salary', 'description': 'Monthly salary and bonuses'},
-            {'name': 'Freelance', 'description': 'Income from freelance work'},
-            {'name': 'Investments', 'description': 'Investment returns and dividends'},
+            {'name': 'Food & Dining', 'description': 'Groceries, restaurants, and food delivery', 'hex_color': '#FF5733'},
+            {'name': 'Transportation', 'description': 'Public transport, fuel, and car maintenance', 'hex_color': '#33A8FF'},
+            {'name': 'Housing', 'description': 'Rent, utilities, and home maintenance', 'hex_color': '#3356FF'},
+            {'name': 'Entertainment', 'description': 'Movies, games, and leisure activities', 'hex_color': '#B033FF'},
+            {'name': 'Shopping', 'description': 'Clothing, electronics, and other purchases', 'hex_color': '#FF33E6'},
+            {'name': 'Healthcare', 'description': 'Medical expenses and insurance', 'hex_color': '#33FFA8'},
+            {'name': 'Education', 'description': 'Books, courses, and educational materials', 'hex_color': '#FFD633'},
+            {'name': 'Salary', 'description': 'Monthly salary and bonuses', 'hex_color': '#4CAF50'},
+            {'name': 'Freelance', 'description': 'Income from freelance work', 'hex_color': '#2196F3'},
+            {'name': 'Investments', 'description': 'Investment returns and dividends', 'hex_color': '#9C27B0'},
         ]
 
         category_objects = []
@@ -37,7 +37,10 @@ class Command(BaseCommand):
             cat, created = Category.objects.get_or_create(
                 user=user,
                 name=category['name'],
-                defaults={'description': category['description']}
+                defaults={
+                    'description': category['description'],
+                    'hex_color': category['hex_color']
+                }
             )
             category_objects.append(cat)
 
@@ -170,6 +173,15 @@ class Command(BaseCommand):
         transactions = []
         current_date = start_date
 
+        # Add transaction names
+        transaction_names = [
+            "Monthly Expense", "Regular Payment", "Routine Purchase", 
+            "Standard Transaction", "Weekly Spending", "Everyday Expense",
+            "Recurring Payment", "Usual Purchase", "Regular Expense", 
+            "Common Transaction", "Typical Payment", "Standard Expense",
+            "Ordinary Purchase", "Normal Payment", "Basic Transaction"
+        ]
+
         while current_date <= today:
             # Generate 5-10 transactions per day
             num_transactions = random.randint(5, 10)
@@ -200,6 +212,7 @@ class Command(BaseCommand):
                     category=category,
                     amount=amount,
                     type='expense' if is_expense else 'income',
+                    title=random.choice(transaction_names),
                     description=random.choice(descriptions),
                     transaction_date=transaction_datetime
                 )
