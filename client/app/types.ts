@@ -1,31 +1,14 @@
-// Transaction Types
-export type Transaction = {
-  id: number;
-  title: string;
-  amount: number;
-  date: string;
-  category: string;
-  notes?: string;
-};
+// Re-export types from budgethink.ts
+export type {
+  CategoryReadInterface as Category,
+  TransactionReadInterface as Transaction,
+  BudgetReadInterface as Budget,
+  CategoryWriteInterface,
+  TransactionWriteInterface,
+  BudgetWriteInterface,
+  DashboardReadInterface,
+  DashboardFilterInterface
+} from '@/lib/types/budgethink';
 
-// Category Types
-export type Category = {
-  id: number;
-  name: string;
-  color: string;
-};
-
-// Budget Types
-
-export type BudgetType = 'category' | 'total';
-
-export interface Budget {
-  id: number;
-  type: BudgetType;
-  categoryId?: number; // Only for category type budgets
-  amount: number;
-  month: number;
-  year: number;
-  createdAt: string;
-  updatedAt: string;
-} 
+// Budget type (can be 'category' or 'total')
+export type BudgetType = 'category' | 'total'; 

@@ -1,14 +1,14 @@
 "use client";
 
-import { Transaction } from "../../app/types";
-import { mockCategories } from "../../app/data/mockData";
+import { Transaction } from "@/app/types";
 
-interface TransactionsListProps {
+export interface TransactionsListProps {
   transactions: Transaction[];
   onEdit: (transaction: Transaction) => void;
+  onDelete?: (id: number) => void;
 }
 
-export function TransactionsList({ transactions, onEdit }: TransactionsListProps) {
+export function TransactionsList({ transactions, onEdit, onDelete }: TransactionsListProps) {
   // Format date function
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -17,20 +17,6 @@ export function TransactionsList({ transactions, onEdit }: TransactionsListProps
       month: "short",
       day: "numeric",
     });
-  };
-
-  // Format currency function
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString("en-PH", {
-      style: "currency",
-      currency: "PHP",
-    });
-  };
-
-  // Get category color
-  const getCategoryColor = (categoryName: string) => {
-    const category = mockCategories.find(cat => cat.name === categoryName);
-    return category ? category.color : "#808080"; // Default to gray if not found
   };
 
   return (
@@ -65,13 +51,13 @@ export function TransactionsList({ transactions, onEdit }: TransactionsListProps
               {transactions.map((transaction) => (
                 <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {formatDate(transaction.date)}
+                    {formatDate(transaction.transaction_date)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                     {transaction.title}
-                    {transaction.notes && (
+                    {transaction.description && (
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate max-w-xs">
-                        {transaction.notes}
+                        {transaction.description}
                       </p>
                     )}
                   </td>
@@ -79,28 +65,38 @@ export function TransactionsList({ transactions, onEdit }: TransactionsListProps
                     <span 
                       className="px-2 py-1 text-xs rounded-full text-white"
                       style={{ 
-                        backgroundColor: getCategoryColor(transaction.category),
+                        backgroundColor: transaction.category?.hex_color || '#000000',
                         color: '#FFFFFF' 
                       }}
                     >
-                      {transaction.category}
+                      {transaction.category?.name || 'Uncategorized'}
                     </span>
                   </td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                    transaction.amount >= 0 
+                    transaction.type === "income"
                       ? "text-green-600 dark:text-green-400" 
                       : "text-red-600 dark:text-red-400"
                   }`}>
-                    {transaction.amount >= 0 ? "+" : ""}
-                    {formatCurrency(transaction.amount)}
+                    {transaction.type === "income" ? "+" : "-"}
+                    {transaction.amount}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => onEdit(transaction)}
-                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                    >
-                      Edit
-                    </button>
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        onClick={() => onEdit(transaction)}
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                      >
+                        Edit
+                      </button>
+                      {onDelete && (
+                        <button
+                          onClick={() => onDelete(transaction.id)}
+                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

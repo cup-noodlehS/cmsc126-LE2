@@ -1,16 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { Transaction, Category } from "../../app/types";
-import { mockCategories, mockTransactions } from "@/app/data/mockData";
+import { useState, useEffect } from "react";
 import { TransactionsList } from "./TransactionsList";
 import { TransactionForm } from "./TransactionForm";
+import { TransactionApi, CategoryApi } from "@/lib/stores/budgethink";
+import { 
+  Transaction, 
+  Category, 
+  TransactionWriteInterface
+} from "@/app/types";
+import { useAuthStore } from "@/lib/stores/auth";
 
 type TransactionType = "all" | "income" | "expense";
 type SortField = "date" | "amount" | "title" | "category";
 type SortDirection = "asc" | "desc";
 
 export function TransactionsPage() {
+  const { user } = useAuthStore();
+
+  // Data states
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   // States for filtering and sorting
   const [searchTerm, setSearchTerm] = useState("");
   const [transactionType, setTransactionType] = useState<TransactionType>("all");
@@ -22,52 +34,72 @@ export function TransactionsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
-  // Filter and sort transactions
-  const filteredTransactions = mockTransactions.filter((transaction: Transaction) => {
-    // Filter by search term
-    const matchesSearch = 
-      transaction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
+  // Fetch transactions and categories
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [transactionsResponse, categoriesResponse] = await Promise.all([
+          TransactionApi.filter(),
+          CategoryApi.filter()
+        ]);
+        
+        setTransactions(transactionsResponse.objects);
+        setCategories(categoriesResponse.objects);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    // Filter by transaction type
-    const matchesType = 
-      transactionType === "all" ||
-      (transactionType === "income" && transaction.amount > 0) ||
-      (transactionType === "expense" && transaction.amount < 0);
-    
-    // Filter by category
-    const matchesCategory = 
-      categoryFilter === "" || transaction.category === categoryFilter;
-    
-    return matchesSearch && matchesType && matchesCategory;
-  }).sort((a: Transaction, b: Transaction) => {
-    // Sort by field
-    if (sortField === "date") {
-      return sortDirection === "asc" 
-        ? new Date(a.date).getTime() - new Date(b.date).getTime()
-        : new Date(b.date).getTime() - new Date(a.date).getTime();
+    fetchData();
+  }, []);
+
+  // Filter transactions based on search, type and category
+  const fetchFilteredTransactions = async () => {
+    try {
+      setLoading(true);
+      
+      // Build filter parameters
+      const filters: Record<string, string | number> = {};
+      
+      if (searchTerm) {
+        filters.search = searchTerm;
+      }
+      
+      if (transactionType !== "all") {
+        filters.type = transactionType;
+      }
+      
+      if (categoryFilter) {
+        filters.category = categoryFilter;
+      }
+      
+      // Add sorting parameters
+      if (sortField === "date") {
+        filters.order_by = sortDirection === "asc" ? "transaction_date" : "-transaction_date";
+      } else if (sortField === "amount") {
+        filters.order_by = sortDirection === "asc" ? "amount" : "-amount";
+      } else if (sortField === "title") {
+        filters.order_by = sortDirection === "asc" ? "title" : "-title";
+      } else if (sortField === "category") {
+        filters.order_by = sortDirection === "asc" ? "category__name" : "-category__name";
+      }
+      
+      const response = await TransactionApi.filter(filters);
+      setTransactions(response.objects);
+    } catch (error) {
+      console.error("Error fetching filtered transactions:", error);
+    } finally {
+      setLoading(false);
     }
-    
-    if (sortField === "amount") {
-      return sortDirection === "asc" 
-        ? a.amount - b.amount 
-        : b.amount - a.amount;
-    }
-    
-    if (sortField === "title") {
-      return sortDirection === "asc" 
-        ? a.title.localeCompare(b.title)
-        : b.title.localeCompare(a.title);
-    }
-    
-    if (sortField === "category") {
-      return sortDirection === "asc" 
-        ? a.category.localeCompare(b.category)
-        : b.category.localeCompare(a.category);
-    }
-    
-    return 0;
-  });
+  };
+
+  // Call the fetch filtered transactions whenever filters change
+  useEffect(() => {
+    fetchFilteredTransactions();
+  }, [searchTerm, transactionType, categoryFilter, sortField, sortDirection]);
 
   // Handle adding a new transaction
   const handleAddTransaction = () => {
@@ -81,6 +113,61 @@ export function TransactionsPage() {
     setIsFormOpen(true);
   };
 
+  // Handle saving a transaction (create or update)
+  const handleSaveTransaction = async (formData: TransactionWriteInterface) => {
+    setLoading(true);
+    if (!user) {
+      console.error("User not found");
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      const transactionData: TransactionWriteInterface = {
+        title: formData.title,
+        amount: formData.amount,
+        transaction_date: formData.transaction_date,
+        type: formData.type,
+        category_id: formData.category_id || null,
+        user_id: user.id,
+        description: formData.description || null
+      };
+      
+      if (editingTransaction?.id) {
+        // Update existing transaction
+        await TransactionApi.update(editingTransaction.id, transactionData);
+      } else {
+        // Create new transaction
+        await TransactionApi.create(transactionData);
+      }
+      
+      // Refresh the transactions list
+      await fetchFilteredTransactions();
+      setIsFormOpen(false);
+    } catch (error) {
+      console.error("Error saving transaction:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle deleting a transaction
+  const handleDeleteTransaction = async (id: number) => {
+    if (window.confirm("Are you sure you want to delete this transaction?")) {
+      setLoading(true);
+      
+      try {
+        await TransactionApi.delete(id);
+        // Refresh the transactions list
+        await fetchFilteredTransactions();
+      } catch (error) {
+        console.error("Error deleting transaction:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
@@ -89,6 +176,7 @@ export function TransactionsPage() {
         <button
           onClick={handleAddTransaction}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center text-sm"
+          disabled={loading}
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -144,8 +232,8 @@ export function TransactionsPage() {
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
             >
               <option value="">All Categories</option>
-              {mockCategories.map((category: Category) => (
-                <option key={category.id} value={category.name}>
+              {categories.map((category: Category) => (
+                <option key={category.id} value={category.id.toString()}>
                   {category.name}
                 </option>
               ))}
@@ -180,11 +268,21 @@ export function TransactionsPage() {
         </div>
       </div>
       
+      {/* Loading state */}
+      {loading && (
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        </div>
+      )}
+      
       {/* Transactions List */}
-      <TransactionsList 
-        transactions={filteredTransactions}
-        onEdit={handleEditTransaction}
-      />
+      {!loading && (
+        <TransactionsList 
+          transactions={transactions}
+          onEdit={handleEditTransaction}
+          onDelete={handleDeleteTransaction}
+        />
+      )}
       
       {/* Add/Edit Transaction Form Dialog */}
       {isFormOpen && (
@@ -206,6 +304,8 @@ export function TransactionsPage() {
             
             <TransactionForm 
               transaction={editingTransaction}
+              categories={categories}
+              onSave={handleSaveTransaction}
               onClose={() => setIsFormOpen(false)}
             />
           </div>

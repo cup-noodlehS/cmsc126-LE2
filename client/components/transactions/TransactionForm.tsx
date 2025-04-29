@@ -1,67 +1,67 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Transaction, Category } from "../../app/types";
-import { CategoryForm } from "@/components/categories/CategoryForm";
-import { useCategories } from "@/app/context/CategoryContext";
+import { Transaction, Category, TransactionWriteInterface } from "../../app/types";
+import { useAuthStore } from "@/lib/stores/auth";
 
-interface TransactionFormProps {
+export interface TransactionFormProps {
   transaction?: Transaction | null;
+  categories: Category[];
+  onSave: (transaction: TransactionWriteInterface) => void;
   onClose: () => void;
 }
 
-export function TransactionForm({ transaction, onClose }: TransactionFormProps) {
+export function TransactionForm({ transaction, categories, onSave, onClose }: TransactionFormProps) {
+  const { user } = useAuthStore();
   // Form state
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState("");
-  const [category, setCategory] = useState("");
+  const [categoryId, setCategoryId] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  
-  // Get categories from context instead of mock data
-  const { categories, addCategory } = useCategories();
   
   // Initialize form with transaction data if editing
   useEffect(() => {
     if (transaction) {
       setTitle(transaction.title);
-      // Store amount as positive and set type accordingly
+      // Store amount as positive
       setAmount(Math.abs(transaction.amount).toString());
-      setType(transaction.amount >= 0 ? "income" : "expense");
-      setDate(transaction.date.substring(0, 10)); // Format YYYY-MM-DD
-      setCategory(transaction.category);
-      setNotes(transaction.notes || "");
+      setType(transaction.type);
+      setDate(transaction.transaction_date.substring(0, 10)); // Format YYYY-MM-DD
+      
+      // Set category ID if exists
+      setCategoryId(transaction.category?.id.toString() || "");
+      
+      setNotes(transaction.description || "");
     } else {
       // Default values for new transaction
       setDate(new Date().toISOString().substring(0, 10));
     }
-  }, [transaction]);
+  }, [transaction, categories]);
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
     
-    // Convert amount to number and apply sign based on type
+    // Convert amount to number
     const numericAmount = parseFloat(amount);
-    const finalAmount = type === "expense" ? -Math.abs(numericAmount) : Math.abs(numericAmount);
     
     // Create transaction object
-    const formData = {
-      id: transaction?.id || Date.now(),
+    const formData: TransactionWriteInterface = {
       title,
-      amount: finalAmount,
-      date,
-      category,
-      notes: notes || undefined,
+      amount: numericAmount,
+      type: type,
+      transaction_date: date,
+      category_id: categoryId ? parseInt(categoryId) : null,
+      description: notes || null,
+      user_id: user.id
     };
     
-    // In a real app, this would save to API
-    console.log("Saving transaction:", formData);
-    
-    // Close form
-    onClose();
+    // Save transaction via callback
+    onSave(formData);
   };
 
   // Handle opening the category modal
@@ -71,16 +71,6 @@ export function TransactionForm({ transaction, onClose }: TransactionFormProps) 
 
   // Handle closing the category modal
   const handleCloseCategoryModal = () => {
-    setIsCategoryModalOpen(false);
-  };
-
-  // Handle saving a new category
-  const handleSaveCategory = (newCategory: Category) => {
-    addCategory({
-      name: newCategory.name,
-      color: newCategory.color,
-    });
-    setCategory(newCategory.name);
     setIsCategoryModalOpen(false);
   };
 
@@ -184,19 +174,18 @@ export function TransactionForm({ transaction, onClose }: TransactionFormProps) 
             <select
               id="category"
               required
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               <option value="" disabled>Select a category</option>
               {categories.map((cat: Category) => (
                 <option 
                   key={cat.id} 
-                  value={cat.name}
-                  style={{ 
-                    backgroundColor: cat.color,
-                    color: 'white',
-                    fontWeight: 'bold'
+                  value={cat.id.toString()}
+                  style={{
+                    backgroundColor: cat.hex_color,
+                    color: "#FFFFFF"
                   }}
                 >
                   {cat.name}
@@ -249,15 +238,31 @@ export function TransactionForm({ transaction, onClose }: TransactionFormProps) 
       {/* Category Modal */}
       {isCategoryModalOpen && (
         <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Create New Category
-            </h2>
-            <CategoryForm 
-              category={null} 
-              onSave={handleSaveCategory} 
-              onCancel={handleCloseCategoryModal} 
-            />
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                Add New Category
+              </h2>
+              <button 
+                onClick={handleCloseCategoryModal}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* We'll comment out the CategoryForm for now since we're not implementing it */}
+            <div className="p-4 text-center">
+              <p>New category functionality is not implemented yet.</p>
+              <button
+                onClick={handleCloseCategoryModal}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
