@@ -6,6 +6,23 @@ import { CategoryForm } from "@/components/categories/CategoryForm";
 import { Layout } from "@/components/layout/Layout";
 import { CategoryReadInterface } from "@/lib/types/budgethink";
 
+// Function to determine if text should be black or white based on background color
+const getContrastTextColor = (hexColor: string): string => {
+  // Remove the # if present
+  const hex = hexColor.replace('#', '');
+  
+  // Convert hex to RGB
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  
+  // Calculate luminance using the formula for relative luminance in the sRGB color space
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  
+  // Return black for light backgrounds, white for dark backgrounds
+  return luminance > 0.5 ? '#000000' : '#FFFFFF';
+};
+
 export default function CategoriesPage() {
   const { categories, isLoading, error, fetchCategories, addCategory, updateCategory, deleteCategory } = useCategoriesStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -102,10 +119,10 @@ export default function CategoriesPage() {
                     <tr key={category.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                         <span 
-                          className="px-3 py-1.5 text-xs rounded-full text-white"
+                          className="px-3 py-1.5 text-xs rounded-full"
                           style={{ 
                             backgroundColor: category.hex_color,
-                            color: '#FFFFFF' 
+                            color: getContrastTextColor(category.hex_color)
                           }}
                         >
                           {category.name}
@@ -136,10 +153,10 @@ export default function CategoriesPage() {
                   <tr className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       <span 
-                        className="px-3 py-1.5 text-xs rounded-full text-white"
+                        className="px-3 py-1.5 text-xs rounded-full"
                         style={{ 
                           backgroundColor: '#808080',
-                          color: '#FFFFFF' 
+                          color: getContrastTextColor('#808080')
                         }}
                       >
                         No Category
