@@ -9,14 +9,14 @@ function AuthUserMiddleware({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore()
   const [isLoading, setIsLoading] = useState(false)
 
-
   useEffect(() => {
     const fetchUser = async () => {
         setIsLoading(true)
         try {
             await getUser()
         } catch (error) {
-            console.error(error)
+            // Silently ignore authentication errors
+            console.error('Auth error:', error)
         } finally {
             setIsLoading(false)
         }
@@ -27,7 +27,7 @@ function AuthUserMiddleware({ children }: { children: React.ReactNode }) {
   }, [pathname, user])
 
   if (isLoading) {
-    return
+    return null // Return null when loading to avoid React errors
   }
   return children
 }

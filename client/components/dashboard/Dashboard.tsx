@@ -22,70 +22,6 @@ ChartJS.register(
   LineElement
 );
 
-// Mock data
-const mockMonthlyData = {
-  income: 3500,
-  expenses: 2850,
-  balance: 650,
-  month: 'October',
-  year: 2023
-};
-
-const mockRecentTransactions = [
-  { id: 1, title: 'Groceries', amount: -120.50, date: '2023-10-15', category: 'Food' },
-  { id: 2, title: 'Salary', amount: 3500, date: '2023-10-01', category: 'Income' },
-  { id: 3, title: 'Electric Bill', amount: -85.20, date: '2023-10-10', category: 'Utilities' },
-  { id: 4, title: 'Restaurant', amount: -65.80, date: '2023-10-14', category: 'Food' },
-  { id: 5, title: 'Uber', amount: -22.50, date: '2023-10-12', category: 'Transportation' },
-];
-
-// Category spending mock data with colors from mockCategories
-const categoryColors = mockCategories.reduce((acc, cat) => {
-  acc[cat.name] = cat.color;
-  return acc;
-}, {} as Record<string, string>);
-
-const mockCategoryData = {
-  labels: ['Food', 'Utilities', 'Transportation', 'Entertainment', 'Healthcare'],
-  datasets: [
-    {
-      data: [650, 400, 300, 200, 150],
-      backgroundColor: [
-        categoryColors['Food'] || 'rgba(255, 99, 132, 0.7)',
-        categoryColors['Utilities'] || 'rgba(54, 162, 235, 0.7)',
-        categoryColors['Transportation'] || 'rgba(255, 206, 86, 0.7)',
-        categoryColors['Entertainment'] || 'rgba(75, 192, 192, 0.7)',
-        categoryColors['Health'] || 'rgba(153, 102, 255, 0.7)',
-      ],
-      borderColor: [
-        categoryColors['Food'] || 'rgba(255, 99, 132, 1)',
-        categoryColors['Utilities'] || 'rgba(54, 162, 235, 1)',
-        categoryColors['Transportation'] || 'rgba(255, 206, 86, 1)',
-        categoryColors['Entertainment'] || 'rgba(75, 192, 192, 1)',
-        categoryColors['Health'] || 'rgba(153, 102, 255, 1)',
-      ],
-      borderWidth: 1,
-    },
-  ],
-};
-
-// Monthly income vs expenses mock data
-const mockMonthlyComparisonData = {
-  labels: ['Jul', 'Aug', 'Sep', 'Oct'],
-  datasets: [
-    {
-      label: 'Income',
-      data: [3200, 3200, 3400, 3500],
-      backgroundColor: categoryColors['Income'] || 'rgba(75, 192, 192, 0.7)',
-    },
-    {
-      label: 'Expenses',
-      data: [2700, 2900, 2600, 2850],
-      backgroundColor: 'rgba(255, 99, 132, 0.7)',
-    },
-  ],
-};
-
 // Get category color
 const getCategoryColor = (categoryName: string) => {
   const category = mockCategories.find(cat => cat.name === categoryName);
@@ -105,7 +41,8 @@ export function Dashboard() {
       console.log(data, 'here');
       setDashboardData(data);
     } catch (error) {
-      setError(error as string);
+      console.error('Dashboard error:', error);
+      setError(typeof error === 'object' ? 'Failed to load dashboard data' : String(error));
     } finally {
       setIsLoading(false);
     }
@@ -114,6 +51,69 @@ export function Dashboard() {
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  // Prepare category data for pie chart
+  const categoryData = {
+    labels: dashboardData?.categories.map(cat => cat.category__name) || [],
+    datasets: [
+      {
+        data: dashboardData?.categories.map(cat => cat.total) || [],
+        backgroundColor: dashboardData?.categories.map(cat => {
+          const categoryColor = getCategoryColor(cat.category__name);
+          return categoryColor.replace('1)', '0.7)'); // Make slightly transparent
+        }) || [],
+        borderColor: dashboardData?.categories.map(cat => getCategoryColor(cat.category__name)) || [],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  // Prepare monthly comparison data for bar chart
+  const monthlyComparisonData = {
+    labels: dashboardData?.income_vs_expenses.map(month => month.month).reverse() || [],
+    datasets: [
+      {
+        label: 'Income',
+        data: dashboardData?.income_vs_expenses.map(month => month.income).reverse() || [],
+        backgroundColor: getCategoryColor('Income') || 'rgba(75, 192, 192, 0.7)',
+      },
+      {
+        label: 'Expenses',
+        data: dashboardData?.income_vs_expenses.map(month => month.expense).reverse() || [],
+        backgroundColor: 'rgba(255, 99, 132, 0.7)',
+      },
+    ],
+  };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-2"></div>
+          <p className="text-gray-600 dark:text-gray-300">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 dark:bg-red-900 p-4 rounded-lg text-red-700 dark:text-red-200">
+          <h2 className="text-lg font-medium mb-2">Error loading dashboard</h2>
+          <p>{error}</p>
+          <button 
+            onClick={fetchDashboardData}
+            className="mt-3 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
@@ -124,18 +124,18 @@ export function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <SummaryCard
           title="Income"
-          value={`₱${mockMonthlyData.income.toLocaleString()}`}
+          value={`₱${dashboardData?.income?.toLocaleString() || '0'}`}
           type="income"
         />
         <SummaryCard
           title="Expenses"
-          value={`₱${mockMonthlyData.expenses.toLocaleString()}`}
+          value={`₱${dashboardData?.expense?.toLocaleString() || '0'}`}
           type="expense"
         />
         <SummaryCard
           title="Balance"
-          value={`₱${mockMonthlyData.balance.toLocaleString()}`}
-          type={mockMonthlyData.balance >= 0 ? "positive" : "negative"}
+          value={`₱${dashboardData?.balance?.toLocaleString() || '0'}`}
+          type={(dashboardData?.balance || 0) >= 0 ? "positive" : "negative"}
         />
       </div>
       
@@ -144,14 +144,14 @@ export function Dashboard() {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Expenses by Category</h2>
           <div className="h-64 flex items-center justify-center">
-            <Pie data={mockCategoryData} options={{ maintainAspectRatio: false }} />
+            <Pie data={categoryData} options={{ maintainAspectRatio: false }} />
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Income vs Expenses</h2>
           <div className="h-64">
             <Bar
-              data={mockMonthlyComparisonData}
+              data={monthlyComparisonData}
               options={{
                 maintainAspectRatio: false,
                 scales: {
@@ -189,28 +189,29 @@ export function Dashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {mockRecentTransactions.map((transaction) => (
+              {dashboardData?.recent_transactions?.map((transaction) => (
                 <tr key={transaction.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{transaction.title}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                    {transaction.title || transaction.description}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                     <span 
                       className="px-2 py-1 text-xs rounded-full text-white"
                       style={{ 
-                        backgroundColor: getCategoryColor(transaction.category),
+                        backgroundColor: transaction.category?.hex_color || getCategoryColor(transaction.category?.name || ''),
                         color: '#FFFFFF' 
                       }}
                     >
-                      {transaction.category}
+                      {transaction.category?.name}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{new Date(transaction.date).toLocaleDateString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                    {new Date(transaction.transaction_date).toLocaleDateString()}
+                  </td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
-                    transaction.amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                    transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                   }`}>
-                    {transaction.amount >= 0 ? '+' : ''}{transaction.amount.toLocaleString('en-PH', {
-                      style: 'currency',
-                      currency: 'PHP',
-                    })}
+                    {transaction.formatted_amount}
                   </td>
                 </tr>
               ))}

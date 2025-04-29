@@ -79,9 +79,14 @@ export const register = async (user: UserWriteInterface) => {
 };
 
 export const getUser = async () => {
-    const response = await api.get('/auth/me/');
-    useAuthStore.getState().setUser(response.data);
-    return response.data;
+    try {
+        const response = await api.get('/auth/me/');
+        useAuthStore.getState().setUser(response.data);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
 };
 
 export const UserApi = new GenericApi<UserInterface, UserWriteInterface>('/auth/users/');
