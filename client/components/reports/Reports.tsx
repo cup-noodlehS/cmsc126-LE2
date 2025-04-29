@@ -28,6 +28,7 @@ export function Reports() {
   const [error, setError] = useState<string | null>(null);
   const [monthsSpan, setMonthsSpan] = useState(6); // Default to 6 months
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('summary'); // 'summary' or 'detailed'
   
   const fetchReportData = async () => {
     setIsLoading(true);
@@ -135,162 +136,256 @@ export function Reports() {
   }
 
   return (
-    <div className="p-6">
-      {/* Page title */}
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Financial Reports</h1>
-      
-      {/* Controls */}
-      <div className="mb-8 flex flex-col md:flex-row gap-4 items-start md:items-center">
-        <div>
-          <label htmlFor="monthsSpan" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Months to display
-          </label>
-          <select
-            id="monthsSpan"
-            value={monthsSpan}
-            onChange={(e) => setMonthsSpan(Number(e.target.value))}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-          >
-            <option value={3}>3 months</option>
-            <option value={6}>6 months</option>
-            <option value={12}>12 months</option>
-          </select>
-        </div>
-        
-        <div>
-          <label htmlFor="selectedMonth" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Filter by month
-          </label>
-          <select
-            id="selectedMonth"
-            value={selectedMonth || ''}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-          >
-            <option value="">All months</option>
-            {dashboardData?.income_vs_expenses.map((month) => (
-              <option key={month.month} value={month.month}>
-                {month.month}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      
-      {/* Charts grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Expenses by Category</h2>
-          <div className="h-80">
-            <Pie data={categoryData} options={{ 
-              maintainAspectRatio: false,
-              plugins: {
-                tooltip: {
-                  callbacks: {
-                    label: function(context) {
-                      const label = context.label || '';
-                      const value = context.raw as number;
-                      const total = (context.dataset.data as number[]).reduce((a, b) => (a as number) + (b as number), 0);
-                      const percentage = Math.round((value / total) * 100);
-                      return `${label}: ₱${value.toLocaleString()} (${percentage}%)`;
-                    }
-                  }
-                }
-              }
-            }} />
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* Page header with title and controls */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Financial Reports</h1>
+          
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div>
+              <label htmlFor="monthsSpan" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Time Period
+              </label>
+              <select
+                id="monthsSpan"
+                value={monthsSpan}
+                onChange={(e) => setMonthsSpan(Number(e.target.value))}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm px-3 py-2"
+              >
+                <option value={3}>Last 3 months</option>
+                <option value={6}>Last 6 months</option>
+                <option value={12}>Last 12 months</option>
+              </select>
+            </div>
+            
+            <div>
+              <label htmlFor="selectedMonth" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Filter Month
+              </label>
+              <select
+                id="selectedMonth"
+                value={selectedMonth || ''}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm px-3 py-2"
+              >
+                <option value="">All months</option>
+                {dashboardData?.income_vs_expenses.map((month) => (
+                  <option key={month.month} value={month.month}>
+                    {month.month}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Income vs Expenses</h2>
-          <div className="h-80">
-            <Bar
-              data={monthlyComparisonData}
-              options={{
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <SummaryCard
+            title="Total Income"
+            value={`₱${(selectedMonth ? 
+              dashboardData?.income_vs_expenses.find(m => m.month === selectedMonth)?.income :
+              dashboardData?.income)?.toLocaleString() || '0'}`}
+            type="income"
+          />
+          <SummaryCard
+            title="Total Expenses"
+            value={`₱${(selectedMonth ? 
+              dashboardData?.income_vs_expenses.find(m => m.month === selectedMonth)?.expense :
+              dashboardData?.expense)?.toLocaleString() || '0'}`}
+            type="expense"
+          />
+          <SummaryCard
+            title="Balance"
+            value={`₱${(selectedMonth ? 
+              ((dashboardData?.income_vs_expenses.find(m => m.month === selectedMonth)?.income || 0) - 
+              (dashboardData?.income_vs_expenses.find(m => m.month === selectedMonth)?.expense || 0)) :
+              dashboardData?.balance)?.toLocaleString() || '0'}`}
+            type={
+              (selectedMonth ? 
+                (dashboardData?.income_vs_expenses.find(m => m.month === selectedMonth)?.income || 0) >= 
+                (dashboardData?.income_vs_expenses.find(m => m.month === selectedMonth)?.expense || 0) :
+                (dashboardData?.balance || 0) >= 0) 
+                ? "positive" 
+                : "negative"
+            }
+          />
+        </div>
+      </div>
+      
+      {/* Tabs */}
+      <div className="mb-6">
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <nav className="flex space-x-8" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('summary')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'summary'
+                  ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-300'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+            >
+              Summary Charts
+            </button>
+            <button
+              onClick={() => setActiveTab('detailed')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'detailed'
+                  ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-300'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+            >
+              Detailed Analysis
+            </button>
+          </nav>
+        </div>
+      </div>
+      
+      {/* Summary Charts */}
+      {activeTab === 'summary' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Expenses by Category</h2>
+            <div className="h-80">
+              <Pie data={categoryData} options={{ 
                 maintainAspectRatio: false,
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    grid: {
-                      color: 'rgba(156, 163, 175, 0.15)',
-                    },
-                    ticks: {
-                      callback: function(value) {
-                        return '₱' + value.toLocaleString();
-                      }
-                    }
-                  },
-                  x: {
-                    grid: {
-                      display: false,
-                    },
-                  },
-                },
                 plugins: {
                   tooltip: {
                     callbacks: {
                       label: function(context) {
-                        const label = context.dataset.label || '';
+                        const label = context.label || '';
                         const value = context.raw as number;
-                        return `${label}: ₱${value.toLocaleString()}`;
+                        const total = (context.dataset.data as number[]).reduce((a, b) => (a as number) + (b as number), 0);
+                        const percentage = Math.round((value / total) * 100);
+                        return `${label}: ₱${value.toLocaleString()} (${percentage}%)`;
                       }
                     }
                   }
                 }
-              }}
-            />
+              }} />
+            </div>
           </div>
-        </div>
-      </div>
-      
-      {/* Summary cards for selected month */}
-      {selectedMonth && (
-        <div className="mb-8">
-          <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
-            Summary for {selectedMonth}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {dashboardData?.income_vs_expenses.find(m => m.month === selectedMonth) && (
-              <>
-                <SummaryCard
-                  title="Income"
-                  value={`₱${dashboardData.income_vs_expenses.find(m => m.month === selectedMonth)?.income.toLocaleString() || '0'}`}
-                  type="income"
-                />
-                <SummaryCard
-                  title="Expenses"
-                  value={`₱${dashboardData.income_vs_expenses.find(m => m.month === selectedMonth)?.expense.toLocaleString() || '0'}`}
-                  type="expense"
-                />
-                <SummaryCard
-                  title="Balance"
-                  value={`₱${(
-                    (dashboardData.income_vs_expenses.find(m => m.month === selectedMonth)?.income || 0) - 
-                    (dashboardData.income_vs_expenses.find(m => m.month === selectedMonth)?.expense || 0)
-                  ).toLocaleString()}`}
-                  type={
-                    (dashboardData.income_vs_expenses.find(m => m.month === selectedMonth)?.income || 0) >= 
-                    (dashboardData.income_vs_expenses.find(m => m.month === selectedMonth)?.expense || 0) 
-                      ? "positive" 
-                      : "negative"
+          
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Income vs Expenses</h2>
+            <div className="h-80">
+              <Bar
+                data={monthlyComparisonData}
+                options={{
+                  maintainAspectRatio: false,
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      grid: {
+                        color: 'rgba(156, 163, 175, 0.15)',
+                      },
+                      ticks: {
+                        callback: function(value) {
+                          return '₱' + value.toLocaleString();
+                        }
+                      }
+                    },
+                    x: {
+                      grid: {
+                        display: false,
+                      },
+                    },
+                  },
+                  plugins: {
+                    tooltip: {
+                      callbacks: {
+                        label: function(context) {
+                          const label = context.dataset.label || '';
+                          const value = context.raw as number;
+                          return `${label}: ₱${value.toLocaleString()}`;
+                        }
+                      }
+                    }
                   }
-                />
-              </>
-            )}
+                }}
+              />
+            </div>
+          </div>
+          
+          {/* Top Expense Categories */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md lg:col-span-2">
+            <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Top Expense Categories</h2>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      % of Total
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {filteredCategories
+                    .sort((a, b) => b.total - a.total)
+                    .slice(0, 5)
+                    .map((category) => {
+                      const total = filteredCategories.reduce((sum, cat) => sum + cat.total, 0);
+                      const percentage = Math.round((category.total / total) * 100);
+                      
+                      return (
+                        <tr key={category.category__name} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div 
+                                className="w-3 h-3 rounded-full mr-2" 
+                                style={{backgroundColor: getCategoryColorFromStore(category.category__name)}}
+                              ></div>
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                {category.category__name}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            ₱{category.total.toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
+                                <div 
+                                  className="h-2 rounded-full" 
+                                  style={{
+                                    width: `${percentage}%`,
+                                    backgroundColor: getCategoryColorFromStore(category.category__name)
+                                  }}
+                                ></div>
+                              </div>
+                              <span className="text-sm text-gray-500 dark:text-gray-400 w-10 text-right">
+                                {percentage}%
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
       
-      {/* Detailed Charts */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-          Detailed Financial Analysis
-        </h2>
-        <DetailedCharts 
-          dashboardData={dashboardData} 
-          selectedMonth={selectedMonth} 
-        />
-      </div>
+      {/* Detailed Analysis */}
+      {activeTab === 'detailed' && (
+        <div className="mb-8">
+          <DetailedCharts 
+            dashboardData={dashboardData} 
+            selectedMonth={selectedMonth} 
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -337,7 +432,7 @@ function SummaryCard({ title, value, type }: SummaryCardProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
       <div className="flex items-center">
         <div className={`p-3 rounded-full mr-4 ${getColorClass()}`}>
           {getIcon()}
