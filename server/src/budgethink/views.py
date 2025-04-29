@@ -34,7 +34,7 @@ class TransactionView(GenericView):
         return super().filter_queryset(filters, excludes)
 
     def dashboard_endpoint(self, request):
-        months_span = request.query_params.get("months_span", 4)
+        months_span = int(request.query_params.get("months_span", 4))
         try:
             income = (
                 self.queryset.filter(type="income").aggregate(total=Sum("amount"))[
