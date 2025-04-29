@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { login } from '@/lib/stores/auth';
+import { login, useAuthStore } from '@/lib/stores/auth';
 
 export default function LoginPage() {
+  const { user } = useAuthStore()
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
 
@@ -37,11 +38,18 @@ export default function LoginPage() {
     }
   };
 
+  useEffect(() => {
+    if (user) {
+      router.push(redirect)
+    }
+  }, [user, router, redirect])
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Welcome Back</h1>
+          <h1 className="text-5xl font-bold text-blue-600">BudgeThink</h1>
+          <h1 className="text-2xl font-bold">Welcome Back</h1>
           <p className="mt-2 text-sm text-gray-600">
             Please sign in to your account
           </p>

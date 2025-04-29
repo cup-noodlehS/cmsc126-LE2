@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "./components/ui/ThemeProvider";
 import { CategoryProvider } from "./context/CategoryContext";
 import { BudgetProvider } from "./context/BudgetContext";
+import AuthUserMiddleware from "./components/layout/AuthUserMiddleware";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,13 +32,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProvider>
-          <CategoryProvider>
-            <BudgetProvider>
+        <AuthUserMiddleware>
+          <ThemeProvider>
+            <CategoryProvider>
+              <BudgetProvider>
               {children}
-            </BudgetProvider>
-          </CategoryProvider>
-        </ThemeProvider>
+              </BudgetProvider>
+            </CategoryProvider>
+          </ThemeProvider>
+        </AuthUserMiddleware>
       </body>
     </html>
   );

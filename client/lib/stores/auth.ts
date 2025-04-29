@@ -80,6 +80,7 @@ export const register = async (user: UserWriteInterface) => {
 
 export const getUser = async () => {
     const response = await api.get('/auth/me/');
+    useAuthStore.getState().setUser(response.data);
     return response.data;
 };
 

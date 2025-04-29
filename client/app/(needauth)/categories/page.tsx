@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Category } from "../types";
+import { Category } from "../../types";
 import { CategoryForm } from "@/app/components/categories/CategoryForm";
 import { useCategories } from "@/app/context/CategoryContext";
 import { Layout } from "@/app/components/layout/Layout";
