@@ -19,6 +19,7 @@ class CategorySerializer(BaseCategorySerializer):
 class TransactionSerializer(BaseTransactionSerializer):
     user = UserBaseSerializer(read_only=True)
     category = BaseCategorySerializer(read_only=True)
+    formatted_amount = serializers.CharField(read_only=True)
 
 
 class BudgetSerializer(BaseBudgetSerializer):

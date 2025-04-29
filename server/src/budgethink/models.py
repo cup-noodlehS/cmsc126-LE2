@@ -87,7 +87,8 @@ class Transaction(models.Model):
     def __str__(self):
         return f"{self.title} - {self.amount} ({self.get_type_display()})"
 
-    def get_formatted_amount(self):
+    @property
+    def formatted_amount(self):
         return f"{'+' if self.type == 'income' else '-'}{self.amount}"
 
     def clean(self):
