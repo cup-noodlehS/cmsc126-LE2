@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import { fetchDashboard } from "@/lib/stores/budgethink";
@@ -118,21 +118,38 @@ export function Reports() {
   };
 
   // Prepare monthly comparison data for bar chart
-  const monthlyComparisonData = {
-    labels: dashboardData?.income_vs_expenses.map(month => month.month).reverse() || [],
-    datasets: [
-      {
-        label: 'Income',
-        data: dashboardData?.income_vs_expenses.map(month => month.income).reverse() || [],
-        backgroundColor: 'rgba(75, 192, 192, 0.7)',
-      },
-      {
-        label: 'Expenses',
-        data: dashboardData?.income_vs_expenses.map(month => month.expense).reverse() || [],
-        backgroundColor: 'rgba(255, 99, 132, 0.7)',
-      },
-    ],
-  };
+  const monthlyComparisonData = useMemo(() => {
+    if (!dashboardData?.income_vs_expenses || dashboardData.income_vs_expenses.length === 0) {
+      return {
+        labels: [],
+        datasets: [
+          { label: 'Income', data: [], backgroundColor: 'rgba(75, 192, 192, 0.7)' },
+          { label: 'Expenses', data: [], backgroundColor: 'rgba(255, 99, 132, 0.7)' },
+        ],
+      };
+    }
+
+    // Get the most recent months based on the selected monthsSpan
+    const limitedMonths = [...dashboardData.income_vs_expenses]
+      .slice(0, monthsSpan)
+      .reverse();
+
+    return {
+      labels: limitedMonths.map(month => month.month),
+      datasets: [
+        {
+          label: 'Income',
+          data: limitedMonths.map(month => month.income),
+          backgroundColor: 'rgba(75, 192, 192, 0.7)',
+        },
+        {
+          label: 'Expenses',
+          data: limitedMonths.map(month => month.expense),
+          backgroundColor: 'rgba(255, 99, 132, 0.7)',
+        },
+      ],
+    };
+  }, [dashboardData?.income_vs_expenses, monthsSpan]);
 
   // Show loading state
   if (isLoading) {
@@ -301,7 +318,9 @@ export function Reports() {
           </div>
           
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-            <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Income vs Expenses</h2>
+            <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
+              Income vs Expenses {monthsSpan > 0 ? `(Last ${monthsSpan} Months)` : ''}
+            </h2>
             <div className="h-80">
               <Bar
                 data={monthlyComparisonData}
