@@ -1,22 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { Category } from "../../types";
+import { useState, useEffect } from "react";
+import { useCategoriesStore } from "@/lib/stores/categories";
 import { CategoryForm } from "@/components/categories/CategoryForm";
-import { useCategories } from "@/app/context/CategoryContext";
 import { Layout } from "@/components/layout/Layout";
+import { CategoryReadInterface } from "@/lib/types/budgethink";
 
 export default function CategoriesPage() {
-  const { categories, addCategory, updateCategory, deleteCategory } = useCategories();
+  const { categories, isLoading, error, fetchCategories, addCategory, updateCategory, deleteCategory } = useCategoriesStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
+  const [currentCategory, setCurrentCategory] = useState<CategoryReadInterface | null>(null);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   const handleCreateCategory = () => {
     setCurrentCategory(null);
     setIsModalOpen(true);
   };
 
-  const handleEditCategory = (category: Category) => {
+  const handleEditCategory = (category: CategoryReadInterface) => {
     setCurrentCategory(category);
     setIsModalOpen(true);
   };
@@ -26,22 +30,25 @@ export default function CategoriesPage() {
     setCurrentCategory(null);
   };
 
-  const handleSaveCategory = (category: Category) => {
+  const handleSaveCategory = async (category: { name: string, color: string }) => {
     if (currentCategory) {
       // Update existing category
-      updateCategory(category);
+      await updateCategory(currentCategory.id, {
+        name: category.name,
+        hex_color: category.color,
+      });
     } else {
       // Add new category
-      addCategory({
+      await addCategory({
         name: category.name,
-        color: category.color,
+        hex_color: category.color,
       });
     }
     setIsModalOpen(false);
   };
 
-  const handleDeleteCategory = (id: number) => {
-    deleteCategory(id);
+  const handleDeleteCategory = async (id: number) => {
+    await deleteCategory(id);
   };
 
   return (
@@ -57,64 +64,76 @@ export default function CategoriesPage() {
           </button>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Expenses
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Income
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {categories.map((category: Category) => (
-                  <tr key={category.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      <span 
-                        className="px-3 py-1.5 text-xs rounded-full text-white"
-                        style={{ 
-                          backgroundColor: category.color,
-                          color: '#FFFFFF' 
-                        }}
-                      >
-                        {category.name}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {/* Placeholder for total expenses */}
-                      $5.00 (5)
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {/* Placeholder for total income */}
-                      $200.00 (10)
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleEditCategory(category)}
-                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCategory(category.id)}
-                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                      >
-                        Delete
-                      </button>
-                    </td>
+        {/* Error message */}
+        {error && (
+          <div className="mb-4 p-4 text-red-700 bg-red-100 dark:bg-red-900 dark:text-red-100 rounded-md">
+            {error}
+          </div>
+        )}
+
+        {/* Loading state */}
+        {isLoading && !categories.length ? (
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-700 dark:border-gray-300"></div>
+            <p className="mt-2 text-gray-500 dark:text-gray-400">Loading categories...</p>
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Expenses
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Income
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-                <tr className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {categories.map((category) => (
+                    <tr key={category.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                        <span 
+                          className="px-3 py-1.5 text-xs rounded-full text-white"
+                          style={{ 
+                            backgroundColor: category.hex_color,
+                            color: '#FFFFFF' 
+                          }}
+                        >
+                          {category.name}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        ${category.total_expense} ({category.expense_count})
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        ${category.total_income} ({category.income_count})
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => handleEditCategory(category)}
+                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(category.id)}
+                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       <span 
                         className="px-3 py-1.5 text-xs rounded-full text-white"
@@ -128,31 +147,21 @@ export default function CategoriesPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {/* Placeholder for total expenses */}
-                      $5.00 (5)
+                      $0.00 (0)
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {/* Placeholder for total income */}
-                      $200.00 (10)
+                      $0.00 (0)
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {/* <button
-                        onClick={() => handleEditCategory(category)}
-                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCategory(category.id)}
-                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                      >
-                        Delete
-                      </button> */}
+                      {/* No actions for "No Category" */}
                     </td>
                   </tr>
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Modal */}
         {isModalOpen && (
@@ -162,7 +171,14 @@ export default function CategoriesPage() {
                 {currentCategory ? "Edit Category" : "Create Category"}
               </h2>
               <CategoryForm 
-                category={currentCategory} 
+                category={
+                  currentCategory ? 
+                  {
+                    id: currentCategory.id,
+                    name: currentCategory.name,
+                    color: currentCategory.hex_color
+                  } : null
+                } 
                 onSave={handleSaveCategory} 
                 onCancel={handleCloseModal} 
               />

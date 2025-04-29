@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../components/ui/ThemeProvider";
-import { CategoryProvider } from "./context/CategoryContext";
 import { BudgetProvider } from "./context/BudgetContext";
 import AuthUserMiddleware from "../components/layout/AuthUserMiddleware";
 
@@ -23,24 +22,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        suppressHydrationWarning
+        className={`${geistSans.variable} ${geistMono.variable} font-sans`}
       >
-        <AuthUserMiddleware>
-          <ThemeProvider>
-            <CategoryProvider>
-              <BudgetProvider>
-              {children}
-              </BudgetProvider>
-            </CategoryProvider>
-          </ThemeProvider>
-        </AuthUserMiddleware>
+        <ThemeProvider>
+          <AuthUserMiddleware>
+            <BudgetProvider>{children}</BudgetProvider>
+          </AuthUserMiddleware>
+        </ThemeProvider>
       </body>
     </html>
   );

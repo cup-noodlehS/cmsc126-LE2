@@ -12,6 +12,7 @@ export default function LoginPage() {
 
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     username: '',
@@ -39,58 +40,73 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
-    if (user) {
-      router.push(redirect)
-    }
-  }, [user, router, redirect])
+    // Wait a moment before checking auth state and redirecting
+    const timer = setTimeout(() => {
+      setIsAuthChecking(false);
+      if (user) {
+        router.push(redirect);
+      }
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [user, router, redirect]);
+
+  // Show loading during initial auth check
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-6 py-12">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
         <div className="text-center">
-          <h1 className="text-5xl font-bold text-blue-600">BudgeThink</h1>
-          <h1 className="text-2xl font-bold">Welcome Back</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Please sign in to your account
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">BudgeThink</h1>
+          <h2 className="mt-6 text-xl font-semibold text-gray-900 dark:text-white">Sign in to your account</h2>
+          {error && (
+            <div className="mt-4 p-3 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-md">
+              {error}
+            </div>
+          )}
         </div>
-
-        {error && (
-          <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4 rounded-md shadow-sm">
+          <div className="rounded-md shadow-sm space-y-4">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username or Email
+              <label htmlFor="username" className="sr-only">
+                Username
               </label>
               <input
                 id="username"
                 name="username"
                 type="text"
+                autoComplete="username"
                 required
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Username"
                 value={formData.username}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                placeholder="Enter your username or email"
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="sr-only">
                 Password
               </label>
               <input
                 id="password"
                 name="password"
                 type="password"
+                autoComplete="current-password"
                 required
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white dark:bg-gray-700 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                placeholder="Enter your password"
               />
             </div>
           </div>

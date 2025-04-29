@@ -1,11 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Category } from "../../app/types";
+
+interface Category {
+  id: number;
+  name: string;
+  color: string;
+}
 
 interface CategoryFormProps {
   category: Category | null;
-  onSave: (category: Category) => void;
+  onSave: (category: { name: string, color: string }) => void;
   onCancel: () => void;
 }
 
@@ -31,7 +36,6 @@ export function CategoryForm({ category, onSave, onCancel }: CategoryFormProps) 
     }
 
     onSave({
-      id: category?.id || 0, // If adding new, this will be replaced by the context
       name,
       color
     });
