@@ -56,3 +56,4 @@ class UserView(GenericView):
     permission_classes = [IsAuthenticated]
     queryset = User.objects.all()
     serializer_class = UserBaseSerializer
+    allowed_methods = ['retrieve', 'update']
