@@ -18,6 +18,10 @@ class CategoryView(GenericView):
 
     def initialize_queryset(self, request):
         self.queryset = self.queryset.filter(user=self.request.user)
+    
+    def pre_create(self, request): # only allow 20 categories per user
+        if self.queryset.count() >= 20:
+            return Response({"error": "You can only have 20 categories"}, status=400)
 
 
 class TransactionView(GenericView):
