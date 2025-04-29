@@ -15,4 +15,6 @@ export interface UserWriteInterface {
     last_name: string;
     username: string;
     phone_number?: string | null;
+    password?: string;
+    password2?: string;
 }
