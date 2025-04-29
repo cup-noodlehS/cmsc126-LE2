@@ -89,4 +89,4 @@ export const getUser = async () => {
     }
 };
 
-export const UserApi = new GenericApi<UserInterface, UserWriteInterface>('/auth/users/');
+export const UserApi = new GenericApi<UserInterface, UserWriteInterface>('/auth/users');
