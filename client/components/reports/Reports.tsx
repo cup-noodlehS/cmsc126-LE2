@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import { fetchDashboard } from "@/lib/stores/budgethink";
 import { DashboardReadInterface } from "@/lib/types/budgethink";
 import { useCategoriesStore } from "@/lib/stores/categories";
 import { DetailedCharts } from "./DetailedCharts";
+import { generateCSV, downloadCSV } from "@/lib/utils/exportUtils";
 
 // Register ChartJS components
 ChartJS.register(
@@ -58,6 +59,10 @@ export function Reports() {
   const [monthsSpan, setMonthsSpan] = useState(6); // Default to 6 months
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('summary'); // 'summary' or 'detailed'
+  const [isExporting, setIsExporting] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showExportOptions, setShowExportOptions] = useState(false);
+  const exportOptionsRef = useRef<HTMLDivElement>(null);
   
   const fetchReportData = async () => {
     setIsLoading(true);
@@ -118,38 +123,69 @@ export function Reports() {
   };
 
   // Prepare monthly comparison data for bar chart
-  const monthlyComparisonData = useMemo(() => {
-    if (!dashboardData?.income_vs_expenses || dashboardData.income_vs_expenses.length === 0) {
-      return {
-        labels: [],
-        datasets: [
-          { label: 'Income', data: [], backgroundColor: 'rgba(75, 192, 192, 0.7)' },
-          { label: 'Expenses', data: [], backgroundColor: 'rgba(255, 99, 132, 0.7)' },
-        ],
-      };
+  const monthlyComparisonData = {
+    labels: dashboardData?.income_vs_expenses.map(month => month.month).reverse() || [],
+    datasets: [
+      {
+        label: 'Income',
+        data: dashboardData?.income_vs_expenses.map(month => month.income).reverse() || [],
+        backgroundColor: 'rgba(75, 192, 192, 0.7)',
+      },
+      {
+        label: 'Expenses',
+        data: dashboardData?.income_vs_expenses.map(month => month.expense).reverse() || [],
+        backgroundColor: 'rgba(255, 99, 132, 0.7)',
+      },
+    ],
+  };
+
+  // Close export options when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (exportOptionsRef.current && !exportOptionsRef.current.contains(event.target as Node)) {
+        setShowExportOptions(false);
+      }
     }
-
-    // Get the most recent months based on the selected monthsSpan
-    const limitedMonths = [...dashboardData.income_vs_expenses]
-      .slice(0, monthsSpan)
-      .reverse();
-
-    return {
-      labels: limitedMonths.map(month => month.month),
-      datasets: [
-        {
-          label: 'Income',
-          data: limitedMonths.map(month => month.income),
-          backgroundColor: 'rgba(75, 192, 192, 0.7)',
-        },
-        {
-          label: 'Expenses',
-          data: limitedMonths.map(month => month.expense),
-          backgroundColor: 'rgba(255, 99, 132, 0.7)',
-        },
-      ],
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on cleanup
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [dashboardData?.income_vs_expenses, monthsSpan]);
+  }, [exportOptionsRef]);
+
+  // Handle CSV export
+  const handleExportCSV = () => {
+    if (!dashboardData) return;
+    
+    setIsExporting(true);
+    try {
+      // Generate CSV content with category filter
+      const csvContent = generateCSV(
+        dashboardData, 
+        selectedMonth, 
+        categories, 
+        selectedCategory
+      );
+      
+      // Create filename with date and filters
+      const date = new Date().toISOString().split('T')[0];
+      const monthText = selectedMonth ? `-${selectedMonth.replace(/\s+/g, '-')}` : '';
+      const categoryText = selectedCategory ? `-${selectedCategory.replace(/\s+/g, '-')}` : '';
+      const filename = `financial-report${monthText}${categoryText}-${date}.csv`;
+      
+      // Trigger download
+      downloadCSV(csvContent, filename);
+      
+      // Close export options after successful export
+      setShowExportOptions(false);
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+      // Could add a toast notification here for error feedback
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Show loading state
   if (isLoading) {
@@ -182,12 +218,72 @@ export function Reports() {
   }
 
   return (
-    <div className="p-6">
-      {/* Page title (moved outside) */}
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* Page header with title and controls */}
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Financial Reports</h1>
-      {/* Page header with controls */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div className="flex items-center">
+            <div className="relative ml-4" ref={exportOptionsRef}>
+              <button
+                onClick={() => setShowExportOptions(!showExportOptions)}
+                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!dashboardData}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="-ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export
+              </button>
+              
+              {/* Export options dropdown */}
+              {showExportOptions && (
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-md shadow-lg z-10 p-4 border border-gray-200 dark:border-gray-700">
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Export Options</h3>
+                  
+                  {/* Category filter */}
+                  <div className="mb-4">
+                    <label htmlFor="categoryFilter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Filter by Category
+                    </label>
+                    <select
+                      id="categoryFilter"
+                      value={selectedCategory || ''}
+                      onChange={(e) => setSelectedCategory(e.target.value || null)}
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"
+                    >
+                      <option value="">All Categories</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.name}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  {/* Export button */}
+                  <button
+                    onClick={handleExportCSV}
+                    disabled={isExporting}
+                    className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isExporting ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Exporting...
+                      </>
+                    ) : (
+                      'Export to CSV'
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          
           <div className="flex flex-col sm:flex-row gap-4">
             <div>
               <label htmlFor="monthsSpan" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -318,9 +414,7 @@ export function Reports() {
           </div>
           
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-            <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
-              Income vs Expenses {monthsSpan > 0 ? `(Last ${monthsSpan} Months)` : ''}
-            </h2>
+            <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Income vs Expenses</h2>
             <div className="h-80">
               <Bar
                 data={monthlyComparisonData}

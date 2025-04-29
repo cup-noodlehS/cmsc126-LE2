@@ -10,7 +10,8 @@ import { DashboardReadInterface } from "../types/budgethink";
 export function generateCSV(
   dashboardData: DashboardReadInterface | null, 
   selectedMonth: string | null,
-  categories: Array<{ id: number; name: string; hex_color: string }> | undefined
+  categories: Array<{ id: number; name: string; hex_color: string }> | undefined,
+  selectedCategory: string | null = null
 ): string {
   if (!dashboardData) return "";
   
@@ -28,8 +29,14 @@ export function generateCSV(
         const transactionDate = new Date(transaction.transaction_date);
         const transactionMonth = transactionDate.toLocaleString('default', { month: 'long' }) + ' ' + 
                                 transactionDate.getFullYear();
-        return transactionMonth === selectedMonth;
+        if (transactionMonth !== selectedMonth) return false;
       }
+      
+      // Apply category filter if selected
+      if (selectedCategory && transaction.category?.name !== selectedCategory) {
+        return false;
+      }
+      
       return true;
     })
     .map(transaction => {
@@ -51,6 +58,11 @@ export function generateCSV(
       // Return CSV row
       return [date, type, categoryName, amount, notes].join(',');
     });
+    
+  // Add transactions to CSV content
+  transactions.forEach(transaction => {
+    csvContent += transaction + '\n';
+  });
   
   // Add monthly summary if requested
   if (selectedMonth || dashboardData.income_vs_expenses.length > 0) {
@@ -72,10 +84,12 @@ export function generateCSV(
   csvContent += '\n"Category Breakdown"\n';
   csvContent += 'Category,Total\n';
   
-  // Get filtered categories based on month
+  // Get filtered categories based on month and category filter
   const categoryTotals = dashboardData.categories
     .filter(cat => {
-      // This would be replaced with actual logic if the API supported monthly category filtering
+      if (selectedCategory && cat.category__name !== selectedCategory) {
+        return false;
+      }
       return true;
     })
     .sort((a, b) => b.total - a.total);
