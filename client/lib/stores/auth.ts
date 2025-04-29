@@ -70,7 +70,14 @@ export const logout = async () => {
     setAuthToken(null);
     useAuthStore.getState().setUser(null);
 
-    await api.post('/auth/logout/');
+    try {
+        await api.post('/auth/logout/');
+    } catch (error) {
+        // Silently ignore 401 errors during logout
+        if (!(axios.isAxiosError(error) && error.response?.status === 401)) {
+            console.error('Logout error:', error);
+        }
+    }
 };
 
 export const register = async (user: UserWriteInterface) => {
@@ -84,6 +91,11 @@ export const getUser = async () => {
         useAuthStore.getState().setUser(response.data);
         return response.data;
     } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+            // User is not authenticated, clear any stale user data
+            useAuthStore.getState().setUser(null);
+            return null;
+        }
         console.error(error);
         throw error;
     }
