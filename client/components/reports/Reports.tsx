@@ -62,13 +62,11 @@ export function Reports() {
   };
 
   // Filter data based on selected month (for pie chart)
-  const filteredCategories = selectedMonth
-    ? dashboardData?.categories.filter(cat => {
-        // In a real implementation, you would filter by the selected month
-        // This is just a placeholder since the current API doesn't provide month-specific category data
-        return true;
-      })
-    : dashboardData?.categories || [];
+  const filteredCategories = (dashboardData?.categories ?? []).filter(cat => {
+    // In a real implementation, you would filter by the selected month
+    // This is just a placeholder since the current API doesn't provide month-specific category data
+    return true;
+  });
 
   // Prepare category data for pie chart
   const categoryData = {
@@ -136,12 +134,12 @@ export function Reports() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Page header with title and controls */}
+    <div className="p-6">
+      {/* Page title (moved outside) */}
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Financial Reports</h1>
+      {/* Page header with controls */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Financial Reports</h1>
-          
           <div className="flex flex-col sm:flex-row gap-4">
             <div>
               <label htmlFor="monthsSpan" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
