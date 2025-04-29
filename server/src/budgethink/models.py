@@ -101,7 +101,7 @@ class Budget(models.Model):
     category = models.OneToOneField(
         Category, on_delete=models.SET_NULL, null=True, blank=True, related_name="budgets"
     )
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, null=True, blank=True)
     amount_limit = models.DecimalField(
         max_digits=20, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
     )
@@ -112,14 +112,11 @@ class Budget(models.Model):
         verbose_name = "Budget"
         verbose_name_plural = "Budgets"
         ordering = ["-created_at"]
-        unique_together = ["user", "name"]
-        indexes = [
-            models.Index(fields=["user", "category"]),
-        ]
+        unique_together = ["user", "category"]
 
     def __str__(self):
         category_name = self.category.name if self.category else "All Categories"
-        return f"{self.name} - {self.amount_limit} ({category_name})"
+        return f"{self.name or category_name} - {self.amount_limit}"
 
     def save(self, *args, **kwargs):
         if not self.category:
