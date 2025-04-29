@@ -6,10 +6,10 @@ import { TransactionForm } from "./TransactionForm";
 import { TransactionApi, CategoryApi } from "@/lib/stores/budgethink";
 import { 
   Transaction, 
-  Category, 
   TransactionWriteInterface
 } from "@/app/types";
 import { useAuthStore } from "@/lib/stores/auth";
+import { CategoryReadInterface } from "@/lib/types/budgethink";
 
 type TransactionType = "all" | "income" | "expense";
 type SortField = "date" | "amount" | "title" | "category";
@@ -20,7 +20,10 @@ export function TransactionsPage() {
 
   // Data states
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const [categories, setCategories] = useState<CategoryReadInterface[]>([]);
   const [loading, setLoading] = useState(true);
   
   // States for filtering and sorting
@@ -40,11 +43,12 @@ export function TransactionsPage() {
       try {
         setLoading(true);
         const [transactionsResponse, categoriesResponse] = await Promise.all([
-          TransactionApi.filter(),
+          TransactionApi.filter({page: currentPage}),
           CategoryApi.filter()
         ]);
         
         setTransactions(transactionsResponse.objects);
+        setTotalPages(transactionsResponse.num_pages);
         setCategories(categoriesResponse.objects);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -54,7 +58,7 @@ export function TransactionsPage() {
     };
     
     fetchData();
-  }, []);
+  }, [currentPage]);
 
   // Filter transactions based on search, type and category
   const fetchFilteredTransactions = async () => {
@@ -62,7 +66,9 @@ export function TransactionsPage() {
       setLoading(true);
       
       // Build filter parameters
-      const filters: Record<string, string | number> = {};
+      const filters: Record<string, string | number> = {
+        page: currentPage
+      };
       
       if (searchTerm) {
         filters.search = searchTerm;
@@ -89,6 +95,7 @@ export function TransactionsPage() {
       
       const response = await TransactionApi.filter(filters);
       setTransactions(response.objects);
+      setTotalPages(response.num_pages);
     } catch (error) {
       console.error("Error fetching filtered transactions:", error);
     } finally {
@@ -98,8 +105,14 @@ export function TransactionsPage() {
 
   // Call the fetch filtered transactions whenever filters change
   useEffect(() => {
+    setCurrentPage(1); // Reset to first page when filters change
     fetchFilteredTransactions();
   }, [searchTerm, transactionType, categoryFilter, sortField, sortDirection]);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   // Handle adding a new transaction
   const handleAddTransaction = () => {
@@ -232,7 +245,7 @@ export function TransactionsPage() {
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
             >
               <option value="">All Categories</option>
-              {categories.map((category: Category) => (
+              {categories.map((category: CategoryReadInterface) => (
                 <option key={category.id} value={category.id.toString()}>
                   {category.name}
                 </option>
@@ -282,6 +295,107 @@ export function TransactionsPage() {
           onEdit={handleEditTransaction}
           onDelete={handleDeleteTransaction}
         />
+      )}
+      
+      {/* Pagination Controls */}
+      {!loading && totalPages > 1 && (
+        <div className="flex justify-center mt-6">
+          <nav className="flex items-center flex-wrap">
+            <button
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className={`px-3 py-1 rounded-l-md border ${
+                currentPage === 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:border-gray-600'
+              }`}
+              aria-label="Previous page"
+            >
+              <span aria-hidden="true">&laquo;</span>
+            </button>
+            
+            {/* Improved pagination that shows limited page numbers */}
+            {(() => {
+              const pageNumbers = [];
+              let startPage = Math.max(1, currentPage - 2);
+              const endPage = Math.min(totalPages, startPage + 4);
+              
+              if (endPage - startPage < 4) {
+                startPage = Math.max(1, endPage - 4);
+              }
+              
+              // First page
+              if (startPage > 1) {
+                pageNumbers.push(
+                  <button
+                    key={1}
+                    onClick={() => handlePageChange(1)}
+                    className="px-3 py-1 border-t border-b bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:border-gray-600"
+                  >
+                    1
+                  </button>
+                );
+                
+                if (startPage > 2) {
+                  pageNumbers.push(
+                    <span key="ellipsis1" className="px-2 py-1 border-t border-b dark:border-gray-600">...</span>
+                  );
+                }
+              }
+              
+              // Page numbers around current page
+              for (let i = startPage; i <= endPage; i++) {
+                pageNumbers.push(
+                  <button
+                    key={i}
+                    onClick={() => handlePageChange(i)}
+                    className={`px-3 py-1 border-t border-b ${
+                      currentPage === i
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:border-gray-600'
+                    }`}
+                  >
+                    {i}
+                  </button>
+                );
+              }
+              
+              // Last page
+              if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                  pageNumbers.push(
+                    <span key="ellipsis2" className="px-2 py-1 border-t border-b dark:border-gray-600">...</span>
+                  );
+                }
+                
+                pageNumbers.push(
+                  <button
+                    key={totalPages}
+                    onClick={() => handlePageChange(totalPages)}
+                    className="px-3 py-1 border-t border-b bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:border-gray-600"
+                  >
+                    {totalPages}
+                  </button>
+                );
+              }
+              
+              return pageNumbers;
+            })()}
+            
+            <button
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className={`px-3 py-1 rounded-r-md border ${
+                currentPage === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:border-gray-600'
+              }`}
+              aria-label="Next page"
+            >
+              <span aria-hidden="true">&raquo;</span>
+            </button>
+          </nav>
+        </div>
       )}
       
       {/* Add/Edit Transaction Form Dialog */}

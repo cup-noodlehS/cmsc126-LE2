@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Transaction, Category, TransactionWriteInterface } from "../../app/types";
+import { Transaction, TransactionWriteInterface } from "../../app/types";
 import { useAuthStore } from "@/lib/stores/auth";
-
+import { CategoryReadInterface } from "@/lib/types/budgethink";
 export interface TransactionFormProps {
   transaction?: Transaction | null;
-  categories: Category[];
+  categories: CategoryReadInterface[];
   onSave: (transaction: TransactionWriteInterface) => void;
   onClose: () => void;
 }
@@ -179,7 +179,7 @@ export function TransactionForm({ transaction, categories, onSave, onClose }: Tr
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               <option value="" disabled>Select a category</option>
-              {categories.map((cat: Category) => (
+              {categories.map((cat: CategoryReadInterface) => (
                 <option 
                   key={cat.id} 
                   value={cat.id.toString()}
