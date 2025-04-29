@@ -226,15 +226,18 @@ export function Dashboard() {
                     {transaction.title || transaction.description}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                    {transaction.category && (
+
                     <span 
                       className="px-2 py-1 text-xs rounded-full"
                       style={{ 
-                        backgroundColor: transaction.category?.hex_color || getCategoryColor(transaction.category?.name || ''),
-                        color: getContrastTextColor(transaction.category?.hex_color || getCategoryColor(transaction.category?.name || ''))
+                        backgroundColor: transaction.category?.hex_color || getCategoryColor(transaction.category.name || ''),
+                        color: getContrastTextColor(transaction.category?.hex_color || getCategoryColor(transaction.category.name || ''))
                       }}
                     >
-                      {transaction.category?.name}
+                      {transaction.category.name}
                     </span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                     {new Date(transaction.transaction_date).toLocaleDateString()}
