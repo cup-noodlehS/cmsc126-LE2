@@ -12,24 +12,17 @@ interface BudgetFormProps {
 
 export function BudgetForm({ initialData, onSubmit, onCancel }: BudgetFormProps) {
   const { categories } = useCategories();
-  const [type, setType] = useState<BudgetType>(initialData?.type || "total");
   const [categoryId, setCategoryId] = useState<number | undefined>(initialData?.categoryId);
   const [amount, setAmount] = useState(initialData?.amount?.toString() || "");
   const [month, setMonth] = useState(initialData?.month || new Date().getMonth() + 1);
   const [year, setYear] = useState(initialData?.year || new Date().getFullYear());
 
-  useEffect(() => {
-    if (type === "total") {
-      setCategoryId(undefined);
-    }
-  }, [type]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || isNaN(Number(amount))) return;
     onSubmit({
-      type,
-      categoryId: type === "category" ? categoryId : undefined,
+      type: "category",
+      categoryId: categoryId,
       amount: Number(amount),
       month,
       year,
@@ -38,49 +31,20 @@ export function BudgetForm({ initialData, onSubmit, onCancel }: BudgetFormProps)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Type Toggle */}
-      <div>
-        <label className="block text-sm font-medium text-gray-200 mb-1">Budget Type</label>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className={`flex-1 px-4 py-2 rounded-md font-semibold transition-colors ${type === 'total' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
-            onClick={() => setType('total')}
-          >
-            Total
-          </button>
-          <button
-            type="button"
-            className={`flex-1 px-4 py-2 rounded-md font-semibold transition-colors ${type === 'category' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
-            onClick={() => setType('category')}
-          >
-            Category
-          </button>
-        </div>
-      </div>
-
-      {/* Category Dropdown or Placeholder */}
+      {/* Category Dropdown */}
       <div>
         <label className="block text-sm font-medium text-gray-200 mb-1">Category</label>
-        {type === 'category' ? (
-          <select
-            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            value={categoryId ?? ''}
-            onChange={e => setCategoryId(Number(e.target.value))}
-            required
-          >
-            <option value="" disabled>Select a category</option>
-            {categories.map((cat: Category) => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-        ) : (
-          <input
-            className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-gray-400 cursor-not-allowed"
-            value="Total"
-            disabled
-          />
-        )}
+        <select
+          className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          value={categoryId ?? ''}
+          onChange={e => setCategoryId(Number(e.target.value))}
+          required
+        >
+          <option value="" disabled>Select a category</option>
+          {categories.map((cat: Category) => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
+        </select>
       </div>
 
       {/* Amount */}

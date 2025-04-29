@@ -142,15 +142,6 @@ import { BudgetType } from "../types";
 export const mockBudgets = [
   {
     id: 1,
-    type: "total" as BudgetType,
-    amount: 5000,
-    month: 3,
-    year: 2025,
-    createdAt: "2025-03-01T00:00:00.000Z",
-    updatedAt: "2025-03-01T00:00:00.000Z"
-  },
-  {
-    id: 2,
     type: "category" as BudgetType,
     categoryId: 1,
     amount: 800,
@@ -160,7 +151,7 @@ export const mockBudgets = [
     updatedAt: "2025-03-01T00:00:00.000Z"
   },
   {
-    id: 3,
+    id: 2,
     type: "category" as BudgetType,
     categoryId: 2,
     amount: 400,
@@ -170,7 +161,7 @@ export const mockBudgets = [
     updatedAt: "2025-03-01T00:00:00.000Z"
   },
   {
-    id: 4,
+    id: 3,
     type: "category" as BudgetType,
     categoryId: 3,
     amount: 1200,
@@ -180,7 +171,7 @@ export const mockBudgets = [
     updatedAt: "2025-03-01T00:00:00.000Z"
   },
   {
-    id: 5,
+    id: 4,
     type: "category" as BudgetType,
     categoryId: 3,
     amount: 300,
@@ -190,7 +181,7 @@ export const mockBudgets = [
     updatedAt: "2025-03-01T00:00:00.000Z"
   },
   {
-    id: 6,
+    id: 5,
     type: "category" as BudgetType,
     categoryId: 3,
     amount: 200,
@@ -200,9 +191,9 @@ export const mockBudgets = [
     updatedAt: "2025-03-01T00:00:00.000Z"
   },
   {
-    id: 7,
+    id: 6,
     type: "category" as BudgetType,
-    categoryId: 2,
+    categoryId: 3,
     amount: 300,
     month: 3,
     year: 2025,
@@ -210,16 +201,17 @@ export const mockBudgets = [
     updatedAt: "2025-03-01T00:00:00.000Z"
   },
   {
-    id: 8,
-    type: "total" as BudgetType,
-    amount: 4500,
-    month: 4,
+    id: 7,
+    type: "category" as BudgetType,
+    categoryId: 2,
+    amount: 500,
+    month: 3,
     year: 2025,
-    createdAt: "2025-04-01T00:00:00.000Z",
-    updatedAt: "2025-04-01T00:00:00.000Z"
+    createdAt: "2025-03-01T00:00:00.000Z",
+    updatedAt: "2025-03-01T00:00:00.000Z"
   },
   {
-    id: 9,
+    id: 8,
     type: "category" as BudgetType,
     categoryId: 1,
     amount: 700,
@@ -229,10 +221,20 @@ export const mockBudgets = [
     updatedAt: "2025-04-01T00:00:00.000Z"
   },
   {
-    id: 10,
+    id: 9,
     type: "category" as BudgetType,
     categoryId: 2,
     amount: 350,
+    month: 4,
+    year: 2025,
+    createdAt: "2025-04-01T00:00:00.000Z",
+    updatedAt: "2025-04-01T00:00:00.000Z"
+  },
+  {
+    id: 10,
+    type: "category" as BudgetType,
+    categoryId: 3,
+    amount: 1100,
     month: 4,
     year: 2025,
     createdAt: "2025-04-01T00:00:00.000Z",
