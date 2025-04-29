@@ -34,6 +34,7 @@ class TransactionView(GenericView):
         return super().filter_queryset(filters, excludes)
 
     def dashboard_endpoint(self, request):
+        self.initialize_queryset(request)
         months_span = int(request.query_params.get("months_span", 4))
         try:
             income = (
