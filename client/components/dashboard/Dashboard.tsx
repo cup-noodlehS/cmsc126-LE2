@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
+import { useState, useEffect } from "react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import { mockCategories } from "../../app/data/mockData";
 import { useAuthStore } from "@/lib/stores/auth";
+import { fetchDashboard } from "@/lib/stores/budgethink";
+import { DashboardReadInterface } from "@/lib/types/budgethink";
 
 // Register ChartJS components
 ChartJS.register(
@@ -90,6 +94,27 @@ const getCategoryColor = (categoryName: string) => {
 
 export function Dashboard() {
   const { user } = useAuthStore();
+  const [dashboardData, setDashboardData] = useState<DashboardReadInterface | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchDashboardData = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchDashboard({ months_span: 4 });
+      console.log(data, 'here');
+      setDashboardData(data);
+    } catch (error) {
+      setError(error as string);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
   return (
     <div className="p-6">
       {/* Page title */}
