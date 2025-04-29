@@ -2,14 +2,7 @@
 export const mockCategories = [
   { id: 1, name: "Food", color: "#FF6384" },
   { id: 2, name: "Transportation", color: "#36A2EB" },
-  { id: 3, name: "Housing", color: "#FFCE56" },
-  { id: 4, name: "Entertainment", color: "#4BC0C0" },
-  { id: 5, name: "Health", color: "#9966FF" },
-  { id: 6, name: "Utilities", color: "#FF9F40" },
-  { id: 7, name: "Shopping", color: "#C9CBCF" },
-  { id: 8, name: "Income", color: "#7CFC00" },
-  { id: 9, name: "Education", color: "#8A2BE2" },
-  { id: 10, name: "Others", color: "#808080" },
+  { id: 3, name: "Entertainment", color: "#FFCE56" },
 ];
 
 // Mock Transactions
@@ -173,69 +166,10 @@ export const mockBudgets = [
     id: 4,
     type: "category" as BudgetType,
     categoryId: 3,
-    amount: 1200,
-    month: 3,
-    year: 2025,
-    createdAt: "2025-03-01T00:00:00.000Z",
-    updatedAt: "2025-03-01T00:00:00.000Z"
-  },
-  {
-    id: 5,
-    type: "category" as BudgetType,
-    categoryId: 3,
     amount: 300,
     month: 3,
     year: 2025,
     createdAt: "2025-03-01T00:00:00.000Z",
     updatedAt: "2025-03-01T00:00:00.000Z"
-  },
-  {
-    id: 6,
-    type: "category" as BudgetType,
-    categoryId: 3,
-    amount: 200,
-    month: 3,
-    year: 2025,
-    createdAt: "2025-03-01T00:00:00.000Z",
-    updatedAt: "2025-03-01T00:00:00.000Z"
-  },
-  {
-    id: 7,
-    type: "category" as BudgetType,
-    categoryId: 2,
-    amount: 300,
-    month: 3,
-    year: 2025,
-    createdAt: "2025-03-01T00:00:00.000Z",
-    updatedAt: "2025-03-01T00:00:00.000Z"
-  },
-  {
-    id: 8,
-    type: "total" as BudgetType,
-    amount: 4500,
-    month: 4,
-    year: 2025,
-    createdAt: "2025-04-01T00:00:00.000Z",
-    updatedAt: "2025-04-01T00:00:00.000Z"
-  },
-  {
-    id: 9,
-    type: "category" as BudgetType,
-    categoryId: 1,
-    amount: 700,
-    month: 4,
-    year: 2025,
-    createdAt: "2025-04-01T00:00:00.000Z",
-    updatedAt: "2025-04-01T00:00:00.000Z"
-  },
-  {
-    id: 10,
-    type: "category" as BudgetType,
-    categoryId: 2,
-    amount: 350,
-    month: 4,
-    year: 2025,
-    createdAt: "2025-04-01T00:00:00.000Z",
-    updatedAt: "2025-04-01T00:00:00.000Z"
   }
 ]; 

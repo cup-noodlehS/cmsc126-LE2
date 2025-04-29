@@ -19,6 +19,33 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
   const [budgets, setBudgets] = useState<Budget[]>(mockBudgets);
 
   const addBudget = (budget: Omit<Budget, 'id' | 'createdAt' | 'updatedAt'>) => {
+    // Check if a total budget already exists for this month and year
+    if (budget.type === 'total') {
+      const existingTotalBudget = budgets.find(
+        b => b.type === 'total' && 
+        b.month === budget.month && 
+        b.year === budget.year
+      );
+      
+      if (existingTotalBudget) {
+        throw new Error('A total budget already exists for this period');
+      }
+    }
+
+    // Check if a category budget already exists for this category, month, and year
+    if (budget.type === 'category' && budget.categoryId) {
+      const existingCategoryBudget = budgets.find(
+        b => b.type === 'category' && 
+        b.categoryId === budget.categoryId && 
+        b.month === budget.month && 
+        b.year === budget.year
+      );
+      
+      if (existingCategoryBudget) {
+        throw new Error('A budget already exists for this category in the selected period');
+      }
+    }
+
     const newBudget: Budget = {
       ...budget,
       id: Date.now(), // Temporary ID until backend integration
@@ -29,6 +56,35 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
   };
 
   const updateBudget = (id: number, budget: Omit<Budget, 'id' | 'createdAt' | 'updatedAt'>) => {
+    // Check if a total budget already exists for this month and year
+    if (budget.type === 'total') {
+      const existingTotalBudget = budgets.find(
+        b => b.id !== id && 
+        b.type === 'total' && 
+        b.month === budget.month && 
+        b.year === budget.year
+      );
+      
+      if (existingTotalBudget) {
+        throw new Error('A total budget already exists for this period');
+      }
+    }
+
+    // Check if a category budget already exists for this category, month, and year
+    if (budget.type === 'category' && budget.categoryId) {
+      const existingCategoryBudget = budgets.find(
+        b => b.id !== id && 
+        b.type === 'category' && 
+        b.categoryId === budget.categoryId && 
+        b.month === budget.month && 
+        b.year === budget.year
+      );
+      
+      if (existingCategoryBudget) {
+        throw new Error('A budget already exists for this category in the selected period');
+      }
+    }
+
     setBudgets((prev) =>
       prev.map((b) =>
         b.id === id
