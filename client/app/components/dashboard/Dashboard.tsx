@@ -3,6 +3,7 @@
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import { mockCategories } from "../../data/mockData";
+import { useAuthStore } from "@/lib/stores/auth";
 
 // Register ChartJS components
 ChartJS.register(
@@ -88,10 +89,11 @@ const getCategoryColor = (categoryName: string) => {
 };
 
 export function Dashboard() {
+  const { user } = useAuthStore();
   return (
     <div className="p-6">
       {/* Page title */}
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Welcome, {user?.first_name} {user?.last_name}</h1>
       
       {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">

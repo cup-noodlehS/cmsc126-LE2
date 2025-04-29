@@ -5,7 +5,7 @@ import { destroyCookie, parseCookies, setCookie } from 'nookies';
 const API_URL = process.env.NEXT_PUBLIC_BGW_API || 'http://localhost:8000';
 
 const api = axios.create({
-    baseURL: API_URL,
+    baseURL: `${API_URL}/api/v1`,
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
