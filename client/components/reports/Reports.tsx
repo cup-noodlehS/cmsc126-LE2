@@ -6,6 +6,7 @@ import { Pie, Bar } from 'react-chartjs-2';
 import { fetchDashboard } from "@/lib/stores/budgethink";
 import { DashboardReadInterface } from "@/lib/types/budgethink";
 import { useCategoriesStore } from "@/lib/stores/categories";
+import { DetailedCharts } from "./DetailedCharts";
 
 // Register ChartJS components
 ChartJS.register(
@@ -279,6 +280,17 @@ export function Reports() {
           </div>
         </div>
       )}
+      
+      {/* Detailed Charts */}
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+          Detailed Financial Analysis
+        </h2>
+        <DetailedCharts 
+          dashboardData={dashboardData} 
+          selectedMonth={selectedMonth} 
+        />
+      </div>
     </div>
   );
 }
