@@ -28,6 +28,23 @@ const getCategoryColor = (categoryName: string) => {
   return category ? category.color : "#808080"; // Default to gray if not found
 };
 
+// Function to determine if text should be black or white based on background color
+const getContrastTextColor = (hexColor: string): string => {
+  // Remove the # if present
+  const hex = hexColor.replace('#', '');
+  
+  // Convert hex to RGB
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  
+  // Calculate luminance using the formula for relative luminance in the sRGB color space
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  
+  // Return black for light backgrounds, white for dark backgrounds
+  return luminance > 0.5 ? '#000000' : '#FFFFFF';
+};
+
 export function Dashboard() {
   const { user } = useAuthStore();
   const [dashboardData, setDashboardData] = useState<DashboardReadInterface | null>(null);
@@ -196,10 +213,10 @@ export function Dashboard() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                     <span 
-                      className="px-2 py-1 text-xs rounded-full text-white"
+                      className="px-2 py-1 text-xs rounded-full"
                       style={{ 
                         backgroundColor: transaction.category?.hex_color || getCategoryColor(transaction.category?.name || ''),
-                        color: '#FFFFFF' 
+                        color: getContrastTextColor(transaction.category?.hex_color || getCategoryColor(transaction.category?.name || ''))
                       }}
                     >
                       {transaction.category?.name}
