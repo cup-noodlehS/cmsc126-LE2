@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Transaction, Category } from "../../types";
+import { Transaction, Category } from "../../app/types";
 import { mockCategories, mockTransactions } from "@/app/data/mockData";
 import { TransactionsList } from "./TransactionsList";
 import { TransactionForm } from "./TransactionForm";

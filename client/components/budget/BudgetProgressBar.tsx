@@ -1,5 +1,5 @@
 import React from "react";
-import { Budget, Category } from "../../types";
+import { Budget, Category } from "../../app/types";
 
 interface BudgetProgressBarProps {
   totalBudget: number;

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Transaction, Category } from "../../types";
-import { CategoryForm } from "@/app/components/categories/CategoryForm";
+import { Transaction, Category } from "../../app/types";
+import { CategoryForm } from "@/components/categories/CategoryForm";
 import { useCategories } from "@/app/context/CategoryContext";
 
 interface TransactionFormProps {

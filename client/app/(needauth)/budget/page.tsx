@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Layout } from "../../components/layout/Layout";
-import { BudgetForm } from "../../components/budget/BudgetForm";
+import { Layout } from "../../../components/layout/Layout";
+import { BudgetForm } from "../../../components/budget/BudgetForm";
 import { useBudgets } from "../../context/BudgetContext";
 import { useCategories } from "../../context/CategoryContext";
 import { Budget } from "../../types";
-import { BudgetProgressBar } from "../../components/budget/BudgetProgressBar";
+import { BudgetProgressBar } from "../../../components/budget/BudgetProgressBar";
 
 export default function BudgetPage() {
   const { budgets, addBudget, updateBudget, deleteBudget, getBudgetsByMonth } = useBudgets();

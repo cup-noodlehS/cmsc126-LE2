@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Category } from "../../types";
-import { CategoryForm } from "@/app/components/categories/CategoryForm";
+import { CategoryForm } from "@/components/categories/CategoryForm";
 import { useCategories } from "@/app/context/CategoryContext";
-import { Layout } from "@/app/components/layout/Layout";
+import { Layout } from "@/components/layout/Layout";
 
 export default function CategoriesPage() {
   const { categories, addCategory, updateCategory, deleteCategory } = useCategories();

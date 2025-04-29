@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Budget, BudgetType, Category } from "../../types";
-import { useCategories } from "../../context/CategoryContext";
+import { Budget, BudgetType, Category } from "../../app/types";
+import { useCategories } from "../../app/context/CategoryContext";
 
 interface BudgetFormProps {
   initialData?: Budget;

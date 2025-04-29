@@ -2,7 +2,7 @@
 
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
-import { mockCategories } from "../../data/mockData";
+import { mockCategories } from "../../app/data/mockData";
 import { useAuthStore } from "@/lib/stores/auth";
 
 // Register ChartJS components

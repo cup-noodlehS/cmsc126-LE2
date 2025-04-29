@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Category } from "../../types";
+import { Category } from "../../app/types";
 
 interface CategoryFormProps {
   category: Category | null;

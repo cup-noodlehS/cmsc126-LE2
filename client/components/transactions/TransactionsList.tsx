@@ -1,7 +1,7 @@
 "use client";
 
-import { Transaction } from "../../types";
-import { mockCategories } from "../../data/mockData";
+import { Transaction } from "../../app/types";
+import { mockCategories } from "../../app/data/mockData";
 
 interface TransactionsListProps {
   transactions: Transaction[];

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-
+import { logout } from "@/lib/stores/auth";
+import { useRouter } from "next/navigation";
 const navigation = [
   { name: "Dashboard", href: "/", icon: DashboardIcon },
   { name: "Transactions", href: "/transactions", icon: TransactionIcon },
@@ -15,8 +16,8 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
   return (
     <>
       {/* Mobile menu button */}
@@ -74,9 +75,19 @@ export function Sidebar() {
               })}
             </ul>
           </nav>
-          
           <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-            <div className="text-sm text-gray-500 dark:text-gray-400">Using system theme preferences</div>
+            <button onClick={() => {
+              logout()
+              router.push('/login')
+            }} className="flex items-center text-sm text-red-500 cursor-pointer p-3 px-4 rounded-md w-full hover:bg-red-500/20 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+              </svg>
+              Logout
+            </button>
+          </div>
+          <div className="p-4 border-t text-sm text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-800">
+            Budgethink @ 2025
           </div>
         </div>
       </aside>
