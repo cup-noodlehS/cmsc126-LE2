@@ -11,6 +11,31 @@ import { TransactionApi } from "@/lib/stores/budgethink";
 import { TransactionReadInterface } from "@/lib/types/budgethink";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
+// Function to determine if text should be black or white based on background color
+const getContrastTextColor = (hexColor?: string): string => {
+  // If hexColor is undefined or null, return white
+  if (!hexColor) return '#FFFFFF';
+  
+  // Remove the # if present
+  const hex = hexColor.replace('#', '');
+  
+  // Check if it's a valid hex color
+  if (!/^([0-9A-F]{3}){1,2}$/i.test(hex)) {
+    return '#FFFFFF'; // Default to white for invalid colors
+  }
+  
+  // Convert hex to RGB
+  const r = parseInt(hex.length === 3 ? hex.charAt(0) + hex.charAt(0) : hex.substr(0, 2), 16);
+  const g = parseInt(hex.length === 3 ? hex.charAt(1) + hex.charAt(1) : hex.substr(2, 2), 16);
+  const b = parseInt(hex.length === 3 ? hex.charAt(2) + hex.charAt(2) : hex.substr(4, 2), 16);
+  
+  // Calculate luminance using the formula for relative luminance in the sRGB color space
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  
+  // Return black for light backgrounds, white for dark backgrounds
+  return luminance > 0.5 ? '#000000' : '#FFFFFF';
+};
+
 export default function BudgetPage() {
   const { addBudget, updateBudget, deleteBudget, getBudgetsByMonth, fetchBudgets } = useBudgetStore();
   const { categories, fetchCategories } = useCategoriesStore();
@@ -313,7 +338,6 @@ export default function BudgetPage() {
           categoryBudgets={categoryBudgets}
           categories={categories}
           remaining={remainingBudget}
-          transactions={transactions}
         />
 
         {/* Budget Summary */}
@@ -368,10 +392,14 @@ export default function BudgetPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         <div className="flex items-center">
                           <span 
-                            className="w-3 h-3 rounded-full mr-2"
-                            style={{ backgroundColor: categoryInfo.color }}
-                          />
-                          {categoryInfo.name}
+                            className="px-2 py-1 text-xs rounded-full mr-2"
+                            style={{ 
+                              backgroundColor: categoryInfo.color,
+                              color: getContrastTextColor(categoryInfo.color)
+                            }}
+                          >
+                            {categoryInfo.name}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
@@ -403,8 +431,15 @@ export default function BudgetPage() {
                   <tr className="hover:bg-gray-50 dark:hover:bg-gray-700 bg-gray-50 dark:bg-gray-900">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       <div className="flex items-center">
-                        <span className="w-3 h-3 rounded-full mr-2 bg-gray-400" />
-                        Unallocated Expenses
+                        <span 
+                          className="px-2 py-1 text-xs rounded-full mr-2"
+                          style={{ 
+                            backgroundColor: "#808080",
+                            color: getContrastTextColor("#808080")
+                          }}
+                        >
+                          Unallocated Expenses
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
@@ -465,10 +500,10 @@ export default function BudgetPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                           <span 
-                            className="px-2 py-1 text-xs rounded-full text-white"
+                            className="px-2 py-1 text-xs rounded-full"
                             style={{ 
                               backgroundColor: categoryInfo.color,
-                              color: '#FFFFFF' 
+                              color: getContrastTextColor(categoryInfo.color)
                             }}
                           >
                             {categoryInfo.name}
