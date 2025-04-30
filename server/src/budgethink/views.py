@@ -129,3 +129,23 @@ class BudgetView(GenericView):
 
     def initialize_queryset(self, request):
         self.queryset = self.queryset.filter(user=self.request.user)
+
+    def filter_queryset(self, filters, excludes):
+        month = filters.pop("month", None)
+        year = filters.pop("year", None)
+        
+        if month is not None:
+            try:
+                month = int(month)
+                self.queryset = self.queryset.filter(month=month)
+            except (ValueError, TypeError):
+                pass
+        
+        if year is not None:
+            try:
+                year = int(year)
+                self.queryset = self.queryset.filter(year=year)
+            except (ValueError, TypeError):
+                pass
+        
+        return super().filter_queryset(filters, excludes)

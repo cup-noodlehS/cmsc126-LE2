@@ -98,13 +98,15 @@ class Transaction(models.Model):
 
 class Budget(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="budgets")
-    category = models.OneToOneField(
+    category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True, blank=True, related_name="budgets"
     )
     name = models.CharField(max_length=255, null=True, blank=True)
     amount_limit = models.DecimalField(
         max_digits=20, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
     )
+    month = models.IntegerField(default=1)  # 1-12 for January-December
+    year = models.IntegerField(default=2024)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -112,21 +114,26 @@ class Budget(models.Model):
         verbose_name = "Budget"
         verbose_name_plural = "Budgets"
         ordering = ["-created_at"]
-        unique_together = ["user", "category"]
+        unique_together = ["user", "category", "month", "year"]
 
     def __str__(self):
         category_name = self.category.name if self.category else "All Categories"
-        return f"{self.name or category_name} - {self.amount_limit}"
+        return f"{self.name or category_name} - {self.amount_limit} ({self.month}/{self.year})"
 
     def save(self, *args, **kwargs):
         if not self.category:
             existing_all_budget = (
-                Budget.objects.filter(user=self.user, category=None)
+                Budget.objects.filter(
+                    user=self.user, 
+                    category=None,
+                    month=self.month,
+                    year=self.year
+                )
                 .exclude(pk=self.pk)
                 .exists()
             )
             if existing_all_budget:
-                raise ValueError("You can only have one all budget")
+                raise ValueError("You can only have one total budget per month/year")
         super().save(*args, **kwargs)
 
     def clean(self):
