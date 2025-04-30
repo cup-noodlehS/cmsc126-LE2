@@ -10,7 +10,6 @@ import {
 } from "@/app/types";
 import { useAuthStore } from "@/lib/stores/auth";
 import { CategoryReadInterface } from "@/lib/types/budgethink";
-import { useBudgetStore } from "@/lib/stores/budgets";
 
 type TransactionType = "all" | "income" | "expense";
 type SortField = "date" | "amount" | "title" | "category";
@@ -18,7 +17,6 @@ type SortDirection = "asc" | "desc";
 
 export function TransactionsPage() {
   const { user } = useAuthStore();
-  const { fetchBudgets, getBudgetsByMonth } = useBudgetStore();
 
   // Data states
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -39,11 +37,7 @@ export function TransactionsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
-  // States for error modal
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  // Fetch transactions, categories, and budgets
+  // Fetch transactions and categories
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -56,9 +50,6 @@ export function TransactionsPage() {
         setTransactions(transactionsResponse.objects);
         setTotalPages(transactionsResponse.num_pages);
         setCategories(categoriesResponse.objects);
-        
-        // Fetch budgets
-        await fetchBudgets();
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -67,7 +58,7 @@ export function TransactionsPage() {
     };
     
     fetchData();
-  }, [currentPage, fetchBudgets]);
+  }, [currentPage]);
 
   // Filter transactions based on search, type and category
   const fetchFilteredTransactions = async () => {
@@ -135,14 +126,6 @@ export function TransactionsPage() {
     setIsFormOpen(true);
   };
 
-  // Helper to format currency
-  const formatCurrency = (amount: number): string => {
-    return amount.toLocaleString('en-PH', {
-      style: 'currency',
-      currency: 'PHP',
-    });
-  };
-
   // Handle saving a transaction (create or update)
   const handleSaveTransaction = async (formData: TransactionWriteInterface) => {
     setLoading(true);
@@ -153,84 +136,6 @@ export function TransactionsPage() {
     }
     
     try {
-      // Check if this is an expense and has a category
-      if (formData.type === 'expense' && formData.category_id) {
-        const categoryId = formData.category_id;
-        
-        // Get the transaction date and extract month and year
-        const transactionDate = new Date(formData.transaction_date);
-        const month = transactionDate.getMonth() + 1; // JS months are 0-indexed
-        const year = transactionDate.getFullYear();
-        
-        // Get budget for this category and month
-        const categoryBudgets = getBudgetsByMonth(month, year).filter(b => 
-          b.type === 'category' && b.categoryId === categoryId
-        );
-        
-        // Get category name
-        const category = categories.find(c => c.id === categoryId);
-        const categoryName = category?.name || 'this category';
-        
-        // Check if a budget exists for this category in this month
-        if (categoryBudgets.length === 0) {
-          // No budget exists for this category in this month
-          setErrorMessage(
-            `No budget has been set for ${categoryName} in ${new Date(2000, month - 1).toLocaleString('default', { month: 'long' })} ${year}. ` +
-            `\n\nPlease set a budget for this category first before adding an expense.`
-          );
-          setShowErrorModal(true);
-          setLoading(false);
-          return;
-        }
-        
-        // A budget exists, now check if it would be exceeded
-        const categoryBudget = categoryBudgets[0];
-        
-        // Get all existing expenses for this category in this month
-        const existingExpenses = await TransactionApi.filter({
-          type: 'expense',
-          category: categoryId,
-          month: month,
-          year: year
-        });
-        
-        // Sum up existing expenses (excluding the current one if editing)
-        const existingExpensesSum = existingExpenses.objects.reduce((sum, transaction) => {
-          // Skip the transaction being edited
-          if (editingTransaction && transaction.id === editingTransaction.id) {
-            return sum;
-          }
-          return sum + transaction.amount;
-        }, 0);
-        
-        // Check if adding this expense would exceed the budget
-        const newTotal = existingExpensesSum + formData.amount;
-        
-        // Safely parse the budget amount (which might be a string)
-        const budgetAmount = typeof categoryBudget.amount === 'string' 
-          ? parseFloat(categoryBudget.amount) 
-          : categoryBudget.amount;
-          
-        if (newTotal > budgetAmount) {
-          // Calculate the amount over budget
-          const overBudgetAmount = newTotal - budgetAmount;
-          
-          // Show error message
-          setErrorMessage(
-            `This expense would exceed the budget for ${categoryName} ` +
-            `in ${new Date(2000, month - 1).toLocaleString('default', { month: 'long' })} ${year}. ` +
-            `\n\nBudget: ${formatCurrency(budgetAmount)} ` +
-            `\nExisting expenses: ${formatCurrency(existingExpensesSum)} ` +
-            `\nThis expense: ${formatCurrency(formData.amount)} ` +
-            `\nAmount over budget: ${formatCurrency(overBudgetAmount)} ` +
-            `\n\nPlease reduce the amount or select a different category.`
-          );
-          setShowErrorModal(true);
-          setLoading(false);
-          return;
-        }
-      }
-      
       const transactionData: TransactionWriteInterface = {
         title: formData.title,
         amount: formData.amount,
@@ -254,8 +159,6 @@ export function TransactionsPage() {
       setIsFormOpen(false);
     } catch (error) {
       console.error("Error saving transaction:", error);
-      setErrorMessage("An error occurred while saving the transaction.");
-      setShowErrorModal(true);
     } finally {
       setLoading(false);
     }
@@ -519,28 +422,6 @@ export function TransactionsPage() {
               onSave={handleSaveTransaction}
               onClose={() => setIsFormOpen(false)}
             />
-          </div>
-        </div>
-      )}
-      
-      {/* Error Modal */}
-      {showErrorModal && (
-        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-            <h2 className="text-lg font-medium text-red-600 dark:text-red-400 mb-4">
-              Budget Exceeded
-            </h2>
-            <div className="whitespace-pre-line text-gray-700 dark:text-gray-300 mb-6">
-              {errorMessage}
-            </div>
-            <div className="flex justify-end">
-              <button
-                onClick={() => setShowErrorModal(false)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
-                I Understand
-              </button>
-            </div>
           </div>
         </div>
       )}
