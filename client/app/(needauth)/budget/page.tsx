@@ -73,9 +73,15 @@ export default function BudgetPage() {
       
       // For category budgets, check if they exceed the total budget
       if (budget.type === 'category') {
-        const newSum = sumCategoryBudgets + budget.amount - (currentBudget && currentBudget.type === 'category' ? currentBudget.amount : 0);
-        if (totalBudget > 0 && newSum > totalBudget) {
-          alert('Adding this category budget would exceed the total budget for this period.');
+        const budgetAmount = parseAmount(budget.amount);
+        const currentBudgetAmount = currentBudget && currentBudget.type === 'category' ? parseAmount(currentBudget.amount) : 0;
+        
+        // Calculate what the new sum would be if this budget is added/updated
+        const newSum = sumCategoryBudgets - currentBudgetAmount + budgetAmount;
+        
+        // Check if this would exceed the total budget
+        if (parseAmount(totalBudget) > 0 && newSum > parseAmount(totalBudget)) {
+          alert(`This budget would exceed your total budget for this period. Remaining budget available: ${formatCurrency(remainingBudget + currentBudgetAmount)}`);
           return;
         }
       }
@@ -122,6 +128,14 @@ export default function BudgetPage() {
   const parseAmount = (amount: number | string | undefined | null): number => {
     if (typeof amount === 'string') return parseFloat(amount) || 0;
     return typeof amount === 'number' ? amount : 0;
+  };
+  
+  // Format currency helper
+  const formatCurrency = (amount: number): string => {
+    return amount.toLocaleString('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+    });
   };
   
   // Calculate sum with safe handling - no toFixed 
