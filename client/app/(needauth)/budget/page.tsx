@@ -9,12 +9,12 @@ import { Budget } from "../../types";
 import { BudgetProgressBar } from "../../../components/budget/BudgetProgressBar";
 
 export default function BudgetPage() {
-  const { budgets, addBudget, updateBudget, deleteBudget, getBudgetsByMonth, fetchBudgets } = useBudgetStore();
+  const { addBudget, updateBudget, deleteBudget, getBudgetsByMonth, fetchBudgets } = useBudgetStore();
   const { categories, fetchCategories } = useCategoriesStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState(3); // March
-  const [selectedYear, setSelectedYear] = useState(2025);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Current month (1-12)
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()); // Current year
   const [refreshKey, setRefreshKey] = useState(0); // Used to trigger rerenders
 
   // Fetch data on component mount and when month/year changes
@@ -35,7 +35,6 @@ export default function BudgetPage() {
 
   const handleCreateBudget = () => {
     // Check if a total budget already exists for the selected month/year
-    const totalBudgetExists = filteredBudgets.some(b => b.type === 'total');
     
     // If a total budget exists, we'll default to creating a category budget
     setCurrentBudget(null);
@@ -259,7 +258,7 @@ export default function BudgetPage() {
                 ) : (
                   <tr>
                     <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                      No budgets found for this period. Click "Add Budget" to create one.
+                      No budgets found for this period. Click &quot;Add Budget&quot; to create one.
                     </td>
                   </tr>
                 )}

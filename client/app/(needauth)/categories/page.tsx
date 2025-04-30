@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useCategoriesStore } from "@/lib/stores/categories";
 import { CategoryForm } from "@/components/categories/CategoryForm";
 import { Layout } from "@/components/layout/Layout";
-import { CategoryReadInterface } from "@/lib/types/budgethink";
+import { Category } from "@/app/types";
 
 // Function to determine if text should be black or white based on background color
 const getContrastTextColor = (hexColor?: string): string => {
@@ -34,7 +34,7 @@ const getContrastTextColor = (hexColor?: string): string => {
 export default function CategoriesPage() {
   const { categories, isLoading, error, fetchCategories, addCategory, updateCategory, deleteCategory } = useCategoriesStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentCategory, setCurrentCategory] = useState<CategoryReadInterface | null>(null);
+  const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -45,7 +45,7 @@ export default function CategoriesPage() {
     setIsModalOpen(true);
   };
 
-  const handleEditCategory = (category: CategoryReadInterface) => {
+  const handleEditCategory = (category: Category) => {
     setCurrentCategory(category);
     setIsModalOpen(true);
   };
@@ -153,7 +153,7 @@ export default function CategoriesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
-                          onClick={() => handleEditCategory(category as unknown as CategoryReadInterface)}
+                          onClick={() => handleEditCategory(category)}
                           className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
                         >
                           Edit
@@ -210,7 +210,7 @@ export default function CategoriesPage() {
                   {
                     id: currentCategory.id,
                     name: currentCategory.name,
-                    color: currentCategory.hex_color
+                    color: currentCategory.color
                   } : null
                 } 
                 onSave={handleSaveCategory} 
