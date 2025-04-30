@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Budget, BudgetType, Category } from "../../app/types";
-import { useCategories } from "../../app/context/CategoryContext";
-import { useBudgets } from "../../app/context/BudgetContext";
+import { useCategoriesStore } from "../../lib/stores/categories";
+import { useBudgetStore } from "../../lib/stores/budgets";
 
 interface BudgetFormProps {
   initialData?: Budget;
@@ -12,8 +12,8 @@ interface BudgetFormProps {
 }
 
 export function BudgetForm({ initialData, onSubmit, onCancel }: BudgetFormProps) {
-  const { categories } = useCategories();
-  const { budgets } = useBudgets();
+  const { categories } = useCategoriesStore();
+  const { budgets } = useBudgetStore();
   const [type, setType] = useState<BudgetType>(initialData?.type || "total");
   const [categoryId, setCategoryId] = useState<number | undefined>(initialData?.categoryId);
   const [amount, setAmount] = useState(initialData?.amount?.toString() || "");

@@ -1,20 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Layout } from "../../../components/layout/Layout";
 import { BudgetForm } from "../../../components/budget/BudgetForm";
-import { useBudgets } from "../../context/BudgetContext";
-import { useCategories } from "../../context/CategoryContext";
+import { useBudgetStore } from "../../../lib/stores/budgets";
+import { useCategoriesStore } from "../../../lib/stores/categories";
 import { Budget } from "../../types";
 import { BudgetProgressBar } from "../../../components/budget/BudgetProgressBar";
 
 export default function BudgetPage() {
-  const { budgets, addBudget, updateBudget, deleteBudget, getBudgetsByMonth } = useBudgets();
-  const { categories } = useCategories();
+  const { budgets, addBudget, updateBudget, deleteBudget, getBudgetsByMonth, fetchBudgets } = useBudgetStore();
+  const { categories, fetchCategories } = useCategoriesStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(3); // March
   const [selectedYear, setSelectedYear] = useState(2025);
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchBudgets();
+    fetchCategories();
+  }, []);
 
   const getCategoryInfo = (categoryId: number | undefined) => {
     if (!categoryId) return { name: 'N/A', color: '#808080' };

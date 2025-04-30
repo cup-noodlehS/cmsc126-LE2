@@ -1,16 +1,11 @@
 import React from "react";
 import { Budget, Category } from "../../app/types";
-import { mockTransactions } from "../../app/data/mockData";
 
 interface BudgetProgressBarProps {
   totalBudget: number;
   categoryBudgets: Budget[];
   categories: Category[];
   remaining: number;
-}
-
-interface CategoryExpenses {
-  [key: string]: number;
 }
 
 export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, remaining }: BudgetProgressBarProps) {
@@ -25,38 +20,14 @@ export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, re
     return cat ? cat.name : "Unknown";
   };
 
-  // Calculate expenses for each category for the current month and year
-  const calculateCategoryExpenses = () => {
-    const expenses: CategoryExpenses = {};
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-based
-    const currentYear = currentDate.getFullYear();
-
-    mockTransactions.forEach(transaction => {
-      if (transaction.amount < 0) { // Only consider expenses (negative amounts)
-        const transactionDate = new Date(transaction.date);
-        const transactionMonth = transactionDate.getMonth() + 1;
-        const transactionYear = transactionDate.getFullYear();
-
-        if (transactionMonth === currentMonth && transactionYear === currentYear) {
-          const categoryName = transaction.category;
-          if (!expenses[categoryName]) {
-            expenses[categoryName] = 0;
-          }
-          expenses[categoryName] += Math.abs(transaction.amount);
-        }
-      }
-    });
-    return expenses;
-  };
-
-  const categoryExpenses = calculateCategoryExpenses();
-
+  // For this implementation, we'll assume expenses are tracked in a separate system
+  // In a real app, you would fetch transaction data and calculate expenses here
   const segments = categoryBudgets.map((budget) => {
     const width = totalBudget > 0 ? (budget.amount / totalBudget) * 100 : 0;
     const categoryName = getCategoryName(budget.categoryId);
-    const expenses = categoryExpenses[categoryName] || 0;
-    const expensePercentage = budget.amount > 0 ? (expenses / budget.amount) * 100 : 0;
+    // Placeholder for real expense data
+    const expenses = 0; 
+    const expensePercentage = 0;
 
     return {
       key: budget.id,
@@ -65,7 +36,7 @@ export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, re
       name: categoryName,
       budget: budget.amount,
       expenses,
-      expensePercentage: Math.min(expensePercentage, 100)
+      expensePercentage
     };
   });
 

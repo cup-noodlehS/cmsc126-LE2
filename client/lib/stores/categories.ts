@@ -1,15 +1,30 @@
 import { create } from 'zustand';
 import { CategoryApi } from './budgethink';
 import { CategoryReadInterface, CategoryWriteInterface } from '@/lib/types/budgethink';
+import { Category } from '@/app/types';
 import { useAuthStore } from './auth';
 
+// Helper to convert API type to UI type
+const mapApiToUiCategory = (category: CategoryReadInterface): Category => ({
+  id: category.id,
+  name: category.name,
+  color: category.hex_color
+});
+
+// Helper to convert UI type to API type
+const mapUiToApiCategory = (category: Omit<Category, 'id'>, userId: number): CategoryWriteInterface => ({
+  name: category.name,
+  hex_color: category.color,
+  user_id: userId
+});
+
 interface CategoriesState {
-  categories: CategoryReadInterface[];
+  categories: Category[];
   isLoading: boolean;
   error: string | null;
   fetchCategories: () => Promise<void>;
-  addCategory: (category: Omit<CategoryWriteInterface, 'user_id'>) => Promise<void>;
-  updateCategory: (id: number, category: Omit<CategoryWriteInterface, 'user_id'>) => Promise<void>;
+  addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
+  updateCategory: (id: number, category: Omit<Category, 'id'>) => Promise<void>;
   deleteCategory: (id: number) => Promise<void>;
 }
 
@@ -22,7 +37,8 @@ export const useCategoriesStore = create<CategoriesState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       const response = await CategoryApi.filter();
-      set({ categories: response.objects, isLoading: false });
+      const mappedCategories = response.objects.map(mapApiToUiCategory);
+      set({ categories: mappedCategories, isLoading: false });
     } catch (error) {
       console.error('Error fetching categories:', error);
       set({ error: 'Failed to fetch categories', isLoading: false });
@@ -38,13 +54,12 @@ export const useCategoriesStore = create<CategoriesState>((set, get) => ({
     
     try {
       set({ isLoading: true, error: null });
-      const category = await CategoryApi.create({
-        ...categoryData,
-        user_id: user.id,
-      });
+      const apiCategoryData = mapUiToApiCategory(categoryData, user.id);
+      const category = await CategoryApi.create(apiCategoryData);
+      const uiCategory = mapApiToUiCategory(category);
       
       set(state => ({
-        categories: [...state.categories, category],
+        categories: [...state.categories, uiCategory],
         isLoading: false
       }));
     } catch (error) {
@@ -62,14 +77,13 @@ export const useCategoriesStore = create<CategoriesState>((set, get) => ({
     
     try {
       set({ isLoading: true, error: null });
-      const updatedCategory = await CategoryApi.update(id, {
-        ...categoryData,
-        user_id: user.id,
-      });
+      const apiCategoryData = mapUiToApiCategory(categoryData, user.id);
+      const category = await CategoryApi.update(id, apiCategoryData);
+      const uiCategory = mapApiToUiCategory(category);
       
       set(state => ({
         categories: state.categories.map(cat => 
-          cat.id === id ? updatedCategory : cat
+          cat.id === id ? uiCategory : cat
         ),
         isLoading: false
       }));
