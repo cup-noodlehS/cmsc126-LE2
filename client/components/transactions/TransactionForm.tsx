@@ -20,7 +20,6 @@ export function TransactionForm({ transaction, categories, onSave, onClose }: Tr
   const [categoryId, setCategoryId] = useState<string>("");
   const [notes, setNotes] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   
   // Initialize form with transaction data if editing
   useEffect(() => {
@@ -62,16 +61,6 @@ export function TransactionForm({ transaction, categories, onSave, onClose }: Tr
     
     // Save transaction via callback
     onSave(formData);
-  };
-
-  // Handle opening the category modal
-  const handleOpenCategoryModal = () => {
-    setIsCategoryModalOpen(true);
-  };
-
-  // Handle closing the category modal
-  const handleCloseCategoryModal = () => {
-    setIsCategoryModalOpen(false);
   };
 
   return (
@@ -192,13 +181,6 @@ export function TransactionForm({ transaction, categories, onSave, onClose }: Tr
                 </option>
               ))}
             </select>
-            <button
-              type="button"
-              onClick={handleOpenCategoryModal}
-              className="mt-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              New
-            </button>
           </div>
         </div>
 
@@ -235,37 +217,6 @@ export function TransactionForm({ transaction, categories, onSave, onClose }: Tr
         </div>
       </div>
 
-      {/* Category Modal */}
-      {isCategoryModalOpen && (
-        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                Add New Category
-              </h2>
-              <button 
-                onClick={handleCloseCategoryModal}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            {/* We'll comment out the CategoryForm for now since we're not implementing it */}
-            <div className="p-4 text-center">
-              <p>New category functionality is not implemented yet.</p>
-              <button
-                onClick={handleCloseCategoryModal}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </form>
   );
 } 
