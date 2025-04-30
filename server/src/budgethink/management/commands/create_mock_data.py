@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # Get or create user with id=2
-        user, created = User.objects.get_or_create(id=2, defaults={
+        user, created = User.objects.get_or_create(id=1, defaults={
             'username': 'test_user',
             'email': 'test@example.com',
             'password': 'testpass123'

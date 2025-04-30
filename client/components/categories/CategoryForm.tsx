@@ -21,8 +21,8 @@ export function CategoryForm({ category, onSave, onCancel }: CategoryFormProps) 
 
   useEffect(() => {
     if (category) {
-      setName(category.name);
-      setColor(category.color);
+      setName(category.name || "");
+      setColor(category.color || "#FF5733");
     }
   }, [category]);
 
@@ -79,11 +79,11 @@ export function CategoryForm({ category, onSave, onCancel }: CategoryFormProps) 
           <input
             type="color"
             id="color"
-            value={color}
+            value={color || "#FF5733"}
             onChange={(e) => setColor(e.target.value)}
             className="h-10 w-10 border-none cursor-pointer"
           />
-          <span className="ml-3 text-sm text-gray-600 dark:text-gray-400">{color}</span>
+          <span className="ml-3 text-sm text-gray-600 dark:text-gray-400">{color || "#FF5733"}</span>
         </div>
       </div>
 

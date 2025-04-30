@@ -8,7 +8,7 @@ import { useAuthStore } from './auth';
 const mapApiToUiCategory = (category: CategoryReadInterface): Category => ({
   id: category.id,
   name: category.name,
-  color: category.hex_color,
+  color: category.hex_color || "#FF5733",
   total_income: category.total_income,
   income_count: category.income_count,
   total_expense: category.total_expense,
@@ -20,7 +20,7 @@ const mapApiToUiCategory = (category: CategoryReadInterface): Category => ({
 // Helper to convert UI type to API type
 const mapUiToApiCategory = (category: Omit<Category, 'id'>, userId: number): CategoryWriteInterface => ({
   name: category.name,
-  hex_color: category.color,
+  hex_color: category.color || "#FF5733",
   user_id: userId
 });
 

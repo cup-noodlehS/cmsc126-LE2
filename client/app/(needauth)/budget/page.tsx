@@ -13,8 +13,8 @@ export default function BudgetPage() {
   const { categories, fetchCategories } = useCategoriesStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState(3); // March
-  const [selectedYear, setSelectedYear] = useState(2025);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Current month (1-12)
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()); // Current year
   const [refreshKey, setRefreshKey] = useState(0); // Used to trigger rerenders
 
   // Fetch data on component mount and when month/year changes
@@ -34,6 +34,8 @@ export default function BudgetPage() {
   };
 
   const handleCreateBudget = () => {
+    // Check if a total budget already exists for the selected month/year
+    
     // If a total budget exists, we'll default to creating a category budget
     setCurrentBudget(null);
     setIsModalOpen(true);
