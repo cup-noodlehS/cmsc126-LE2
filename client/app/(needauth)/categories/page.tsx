@@ -5,6 +5,7 @@ import { useCategoriesStore } from "@/lib/stores/categories";
 import { CategoryForm } from "@/components/categories/CategoryForm";
 import { Layout } from "@/components/layout/Layout";
 import { Category } from "@/app/types";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 // Function to determine if text should be black or white based on background color
 const getContrastTextColor = (hexColor?: string): string => {
@@ -35,6 +36,11 @@ export default function CategoriesPage() {
   const { categories, isLoading, error, fetchCategories, addCategory, updateCategory, deleteCategory } = useCategoriesStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
+  
+  // States for delete confirmation
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -72,8 +78,24 @@ export default function CategoriesPage() {
     setIsModalOpen(false);
   };
 
-  const handleDeleteCategory = async (id: number) => {
-    await deleteCategory(id);
+  const openDeleteModal = (category: Category) => {
+    setCategoryToDelete(category);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!categoryToDelete) return;
+    
+    try {
+      setIsDeleting(true);
+      await deleteCategory(categoryToDelete.id);
+      setIsDeleteModalOpen(false);
+      setCategoryToDelete(null);
+    } catch (error) {
+      console.error("Error deleting category:", error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   // Format currency helper
@@ -159,7 +181,7 @@ export default function CategoriesPage() {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteCategory(category.id)}
+                          onClick={() => openDeleteModal(category)}
                           className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                         >
                           Delete
@@ -197,7 +219,7 @@ export default function CategoriesPage() {
           </div>
         )}
 
-        {/* Modal */}
+        {/* Category Form Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
@@ -219,6 +241,32 @@ export default function CategoriesPage() {
             </div>
           </div>
         )}
+        
+        {/* Delete Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          title="Delete Category"
+          message={
+            categoryToDelete && (categoryToDelete.expense_count || categoryToDelete.income_count)
+              ? `This category has ${categoryToDelete.expense_count || 0} expense(s) and ${categoryToDelete.income_count || 0} income transaction(s) associated with it. Are you sure you want to delete it?`
+              : "Are you sure you want to delete this category?"
+          }
+          itemName={categoryToDelete ? 
+            `${categoryToDelete.name} ${
+              (categoryToDelete.expense_count || categoryToDelete.income_count) 
+                ? `(${formatCurrency(categoryToDelete.total_expense || 0)} in expenses, ${formatCurrency(categoryToDelete.total_income || 0)} in income)`
+                : ''
+            }` 
+            : ''
+          }
+          itemType="category"
+          onConfirm={handleDeleteCategory}
+          onCancel={() => {
+            setIsDeleteModalOpen(false);
+            setCategoryToDelete(null);
+          }}
+          isDeleting={isDeleting}
+        />
       </div>
     </Layout>
   );
