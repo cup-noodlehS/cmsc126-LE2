@@ -126,16 +126,25 @@ export function Reports() {
 
   // Prepare monthly comparison data for bar chart
   const monthlyComparisonData = {
-    labels: dashboardData?.income_vs_expenses.map(month => month.month).reverse() || [],
+    labels: dashboardData?.income_vs_expenses
+      .slice(-monthsSpan) 
+      .map(month => month.month)
+      .reverse() || [],
     datasets: [
       {
         label: 'Income',
-        data: dashboardData?.income_vs_expenses.map(month => month.income).reverse() || [],
+        data: dashboardData?.income_vs_expenses
+          .slice(-monthsSpan) 
+          .map(month => month.income)
+          .reverse() || [],
         backgroundColor: 'rgba(75, 192, 192, 0.7)',
       },
       {
         label: 'Expenses',
-        data: dashboardData?.income_vs_expenses.map(month => month.expense).reverse() || [],
+        data: dashboardData?.income_vs_expenses
+          .slice(-monthsSpan) 
+          .map(month => month.expense)
+          .reverse() || [],
         backgroundColor: 'rgba(255, 99, 132, 0.7)',
       },
     ],
@@ -166,7 +175,7 @@ export function Reports() {
       const csvContent = generateCSV(
         dashboardData, 
         selectedMonth, 
-        categories, 
+        categories.map(cat => ({ id: cat.id, name: cat.name, hex_color: cat.color })), 
         selectedCategory
       );
       
