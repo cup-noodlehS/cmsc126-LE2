@@ -29,7 +29,7 @@ interface CategoriesState {
   isLoading: boolean;
   error: string | null;
   fetchCategories: () => Promise<void>;
-  addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
+  addCategory: (category: Omit<Category, 'id'>) => Promise<Category | undefined>;
   updateCategory: (id: number, category: Omit<Category, 'id'>) => Promise<void>;
   deleteCategory: (id: number) => Promise<void>;
 }
@@ -55,7 +55,7 @@ export const useCategoriesStore = create<CategoriesState>((set) => ({
     const user = useAuthStore.getState().user;
     if (!user) {
       set({ error: 'User not authenticated' });
-      return;
+      return undefined;
     }
     
     try {
@@ -68,9 +68,12 @@ export const useCategoriesStore = create<CategoriesState>((set) => ({
         categories: [...state.categories, uiCategory],
         isLoading: false
       }));
+      
+      return uiCategory;
     } catch (error) {
       console.error('Error adding category:', error);
       set({ error: 'Failed to add category', isLoading: false });
+      return undefined;
     }
   },
 
