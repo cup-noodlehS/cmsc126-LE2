@@ -92,7 +92,7 @@ export function Reports() {
   // Function to get category color from our categories store
   const getCategoryColorFromStore = (categoryName: string): string => {
     const category = categories.find(cat => cat.name === categoryName);
-    return category ? category.hex_color : "#808080"; // Default to gray if not found
+    return category?.color || "#808080"; // Default to gray if not found
   };
 
   // Filter data based on selected month (for pie chart)
@@ -111,10 +111,12 @@ export function Reports() {
       {
         data: filteredCategories.map(cat => cat.total),
         backgroundColor: filteredCategories.map(cat => {
-          // Try to find the color in the categories store first
+          // Try to find the color in the categories store
           const categoryColor = getCategoryColorFromStore(cat.category__name);
-          // Make slightly transparent
-          return categoryColor.includes('rgba') ? categoryColor : `${categoryColor}CC`;
+          // Make slightly transparent (safely handle the case when category color might be undefined)
+          return categoryColor && categoryColor.includes && categoryColor.includes('rgba') 
+            ? categoryColor 
+            : `${categoryColor || '#808080'}CC`;
         }),
         borderColor: filteredCategories.map(cat => getCategoryColorFromStore(cat.category__name)),
         borderWidth: 1,

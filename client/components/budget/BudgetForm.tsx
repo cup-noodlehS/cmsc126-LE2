@@ -9,16 +9,28 @@ interface BudgetFormProps {
   initialData?: Budget;
   onSubmit: (budget: Omit<Budget, 'id' | 'createdAt' | 'updatedAt'>) => void;
   onCancel: () => void;
+  selectedMonth?: number;
+  selectedYear?: number;
 }
 
-export function BudgetForm({ initialData, onSubmit, onCancel }: BudgetFormProps) {
+export function BudgetForm({ initialData, onSubmit, onCancel, selectedMonth, selectedYear }: BudgetFormProps) {
   const { categories } = useCategoriesStore();
   const { budgets } = useBudgetStore();
   const [type, setType] = useState<BudgetType>(initialData?.type || "total");
   const [categoryId, setCategoryId] = useState<number | undefined>(initialData?.categoryId);
   const [amount, setAmount] = useState(initialData?.amount?.toString() || "");
-  const [month, setMonth] = useState(initialData?.month || new Date().getMonth() + 1);
-  const [year, setYear] = useState(initialData?.year || new Date().getFullYear());
+  const [month, setMonth] = useState(initialData?.month || selectedMonth || new Date().getMonth() + 1);
+  const [year, setYear] = useState(initialData?.year || selectedYear || new Date().getFullYear());
+
+  // Update month and year when selectedMonth or selectedYear props change
+  useEffect(() => {
+    if (selectedMonth && !initialData) {
+      setMonth(selectedMonth);
+    }
+    if (selectedYear && !initialData) {
+      setYear(selectedYear);
+    }
+  }, [selectedMonth, selectedYear, initialData]);
 
   // Get categories that already have budgets for the selected month and year
   const existingCategoryBudgets = budgets.filter(

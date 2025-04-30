@@ -15,11 +15,16 @@ export default function BudgetPage() {
   const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(3); // March
   const [selectedYear, setSelectedYear] = useState(2025);
+  const [refreshKey, setRefreshKey] = useState(0); // Used to trigger rerenders
 
-  // Fetch data on component mount
+  // Fetch data on component mount and when month/year changes
   useEffect(() => {
     fetchBudgets();
     fetchCategories();
+  }, [selectedMonth, selectedYear, refreshKey]);
+
+  const refreshData = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
   }, []);
 
   const getCategoryInfo = (categoryId: number | undefined) => {
@@ -43,7 +48,7 @@ export default function BudgetPage() {
     setCurrentBudget(null);
   };
 
-  const handleSaveBudget = (budget: Omit<Budget, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleSaveBudget = async (budget: Omit<Budget, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (budget.type === 'category') {
       const newSum = sumCategoryBudgets + budget.amount - (currentBudget && currentBudget.type === 'category' ? currentBudget.amount : 0);
       if (totalBudget > 0 && newSum > totalBudget) {
@@ -51,16 +56,39 @@ export default function BudgetPage() {
         return;
       }
     }
-    if (currentBudget) {
-      updateBudget(currentBudget.id, budget);
-    } else {
-      addBudget(budget);
+    
+    try {
+      if (currentBudget) {
+        await updateBudget(currentBudget.id, budget);
+      } else {
+        await addBudget(budget);
+      }
+      setIsModalOpen(false);
+      refreshData(); // Refresh data after save
+    } catch (error) {
+      console.error("Error saving budget:", error);
+      alert("Failed to save budget. Please try again.");
     }
-    setIsModalOpen(false);
   };
 
-  const handleDeleteBudget = (id: number) => {
-    deleteBudget(id);
+  const handleDeleteBudget = async (id: number) => {
+    try {
+      await deleteBudget(id);
+      refreshData(); // Refresh data after delete
+    } catch (error) {
+      console.error("Error deleting budget:", error);
+      alert("Failed to delete budget. Please try again.");
+    }
+  };
+
+  const handleMonthChange = (newMonth: number) => {
+    setSelectedMonth(newMonth);
+    refreshData();
+  };
+
+  const handleYearChange = (newYear: number) => {
+    setSelectedYear(newYear);
+    refreshData();
   };
 
   const filteredBudgets = getBudgetsByMonth(selectedMonth, selectedYear);
@@ -93,7 +121,7 @@ export default function BudgetPage() {
             <select
               id="month"
               value={selectedMonth}
-              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              onChange={(e) => handleMonthChange(Number(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
             >
               {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
@@ -111,7 +139,7 @@ export default function BudgetPage() {
               type="number"
               id="year"
               value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              onChange={(e) => handleYearChange(Number(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               min="2000"
               max="2100"
@@ -158,50 +186,58 @@ export default function BudgetPage() {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredBudgets.map((budget) => {
-                  const categoryInfo = getCategoryInfo(budget.categoryId);
-                  return (
-                    <tr key={budget.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                        {budget.type === 'total' ? 'Total Budget' : 'Category Budget'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        <span 
-                          className="px-2 py-1 text-xs rounded-full text-white"
-                          style={{ 
-                            backgroundColor: categoryInfo.color,
-                            color: '#FFFFFF' 
-                          }}
-                        >
-                          {categoryInfo.name}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        {budget.amount.toLocaleString('en-PH', {
-                          style: 'currency',
-                          currency: 'PHP',
-                        })}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(2000, budget.month - 1).toLocaleString('default', { month: 'long' })} {budget.year}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => handleEditBudget(budget)}
-                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteBudget(budget.id)}
-                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {filteredBudgets.length > 0 ? (
+                  filteredBudgets.map((budget) => {
+                    const categoryInfo = getCategoryInfo(budget.categoryId);
+                    return (
+                      <tr key={budget.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                          {budget.type === 'total' ? 'Total Budget' : 'Category Budget'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          <span 
+                            className="px-2 py-1 text-xs rounded-full text-white"
+                            style={{ 
+                              backgroundColor: categoryInfo.color,
+                              color: '#FFFFFF' 
+                            }}
+                          >
+                            {categoryInfo.name}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          {budget.amount.toLocaleString('en-PH', {
+                            style: 'currency',
+                            currency: 'PHP',
+                          })}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          {new Date(2000, budget.month - 1).toLocaleString('default', { month: 'long' })} {budget.year}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button
+                            onClick={() => handleEditBudget(budget)}
+                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBudget(budget.id)}
+                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                      No budgets found for this period. Click "Add Budget" to create one.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -218,6 +254,8 @@ export default function BudgetPage() {
                 initialData={currentBudget || undefined}
                 onSubmit={handleSaveBudget}
                 onCancel={handleCloseModal}
+                selectedMonth={selectedMonth}
+                selectedYear={selectedYear}
               />
             </div>
           </div>
