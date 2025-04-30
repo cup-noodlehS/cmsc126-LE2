@@ -28,7 +28,7 @@ interface CategoriesState {
   deleteCategory: (id: number) => Promise<void>;
 }
 
-export const useCategoriesStore = create<CategoriesState>((set, get) => ({
+export const useCategoriesStore = create<CategoriesState>((set) => ({
   categories: [],
   isLoading: false,
   error: null,

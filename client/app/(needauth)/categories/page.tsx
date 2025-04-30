@@ -7,22 +7,22 @@ import { Layout } from "@/components/layout/Layout";
 import { CategoryReadInterface } from "@/lib/types/budgethink";
 
 // Function to determine if text should be black or white based on background color
-const getContrastTextColor = (hexColor: string | undefined | null): string => {
-  // Default to a safe color if hexColor is undefined or null
+const getContrastTextColor = (hexColor?: string): string => {
+  // If hexColor is undefined or null, return white
   if (!hexColor) return '#FFFFFF';
   
   // Remove the # if present
   const hex = hexColor.replace('#', '');
   
+  // Check if it's a valid hex color
+  if (!/^([0-9A-F]{3}){1,2}$/i.test(hex)) {
+    return '#FFFFFF'; // Default to white for invalid colors
+  }
+  
   // Convert hex to RGB
   const r = parseInt(hex.substr(0, 2), 16);
   const g = parseInt(hex.substr(2, 2), 16);
   const b = parseInt(hex.substr(4, 2), 16);
-  
-  // Check if we have valid RGB values
-  if (isNaN(r) || isNaN(g) || isNaN(b)) {
-    return '#FFFFFF'; // Default to white text if the hex color is invalid
-  }
   
   // Calculate luminance using the formula for relative luminance in the sRGB color space
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;

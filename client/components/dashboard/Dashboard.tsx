@@ -30,10 +30,7 @@ const getCategoryColor = (categoryName: string) => {
 };
 
 // Function to determine if text should be black or white based on background color
-const getContrastTextColor = (hexColor: string | undefined | null): string => {
-  // Default to a safe color if hexColor is undefined or null
-  if (!hexColor) return '#FFFFFF';
-  
+const getContrastTextColor = (hexColor: string): string => {
   // Remove the # if present
   const hex = hexColor.replace('#', '');
   
@@ -41,11 +38,6 @@ const getContrastTextColor = (hexColor: string | undefined | null): string => {
   const r = parseInt(hex.substr(0, 2), 16);
   const g = parseInt(hex.substr(2, 2), 16);
   const b = parseInt(hex.substr(4, 2), 16);
-  
-  // Check if we have valid RGB values
-  if (isNaN(r) || isNaN(g) || isNaN(b)) {
-    return '#FFFFFF'; // Default to white text if the hex color is invalid
-  }
   
   // Calculate luminance using the formula for relative luminance in the sRGB color space
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
@@ -237,6 +229,7 @@ export function Dashboard() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                     {transaction.category && (
+
                     <span 
                       className="px-2 py-1 text-xs rounded-full"
                       style={{ 
