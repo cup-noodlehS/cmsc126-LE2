@@ -37,10 +37,22 @@ export function BudgetForm({ initialData, onSubmit, onCancel, selectedMonth, sel
     b => b.type === 'category' && b.month === month && b.year === year
   ).map(b => b.categoryId);
 
-  // Check if a total budget exists for the selected month and year
-  const hasTotalBudget = budgets.some(
-    b => b.type === 'total' && b.month === month && b.year === year
+  // Check if a total budget exists for the selected month and year (that's not the current budget being edited)
+  const existingTotalBudget = budgets.find(
+    b => b.type === 'total' && 
+         b.month === month && 
+         b.year === year && 
+         (!initialData || b.id !== initialData.id)
   );
+
+  const canCreateTotalBudget = !existingTotalBudget;
+  
+  // Set type to category if total budget exists and we're not editing a total budget
+  useEffect(() => {
+    if (!canCreateTotalBudget && (!initialData || initialData.type !== 'total')) {
+      setType('category');
+    }
+  }, [canCreateTotalBudget, initialData]);
 
   useEffect(() => {
     if (type === "total") {
@@ -62,26 +74,46 @@ export function BudgetForm({ initialData, onSubmit, onCancel, selectedMonth, sel
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Type Toggle */}
+      {/* Type Toggle - Show only if we can create a total budget or editing an existing total budget */}
       <div>
         <label className="block text-sm font-medium text-gray-200 mb-1">Budget Type</label>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className={`flex-1 px-4 py-2 rounded-md font-semibold transition-colors ${type === 'total' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
-            onClick={() => setType('total')}
-            disabled={hasTotalBudget && !initialData}
-          >
-            Total
-          </button>
-          <button
-            type="button"
-            className={`flex-1 px-4 py-2 rounded-md font-semibold transition-colors ${type === 'category' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
-            onClick={() => setType('category')}
-          >
-            Category
-          </button>
-        </div>
+        {(canCreateTotalBudget || initialData?.type === 'total') ? (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className={`flex-1 px-4 py-2 rounded-md font-semibold transition-colors ${
+                type === 'total' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+              onClick={() => setType('total')}
+            >
+              Total
+            </button>
+            <button
+              type="button"
+              className={`flex-1 px-4 py-2 rounded-md font-semibold transition-colors ${
+                type === 'category' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+              onClick={() => setType('category')}
+            >
+              Category
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="flex-1 px-4 py-2 rounded-md font-semibold transition-colors bg-blue-600 text-white"
+                onClick={() => setType('category')}
+              >
+                Category
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-yellow-500">
+              A total budget already exists for this month. You can only add category budgets.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Category Dropdown or Placeholder */}

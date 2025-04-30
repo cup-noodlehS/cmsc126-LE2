@@ -71,6 +71,22 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
     }
     
     try {
+      // Check if trying to add a total budget and one already exists for this month/year
+      if (budgetData.type === 'total') {
+        const { budgets } = get();
+        const existingTotalBudget = budgets.find(
+          b => b.type === 'total' && 
+               b.month === budgetData.month && 
+               b.year === budgetData.year
+        );
+        
+        if (existingTotalBudget) {
+          const errorMsg = `A total budget of ${existingTotalBudget.amount.toLocaleString('en-US', {style: 'currency', currency: 'USD'})} already exists for ${new Date(2000, existingTotalBudget.month - 1).toLocaleString('default', { month: 'long' })} ${existingTotalBudget.year}.`;
+          set({ error: errorMsg });
+          throw new Error(errorMsg);
+        }
+      }
+      
       set({ isLoading: true, error: null });
       const apiBudgetData = mapUiToApiBudget(budgetData, user.id);
       const budget = await BudgetApi.create(apiBudgetData);
@@ -82,11 +98,9 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
         budgets: [...state.budgets, uiBudget],
         isLoading: false
       }));
-      
-      return uiBudget;
     } catch (error) {
       console.error('Error adding budget:', error);
-      set({ error: 'Failed to add budget', isLoading: false });
+      set({ error: error instanceof Error ? error.message : 'Failed to add budget', isLoading: false });
       throw error;
     }
   },

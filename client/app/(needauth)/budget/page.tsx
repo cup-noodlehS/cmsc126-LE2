@@ -34,6 +34,10 @@ export default function BudgetPage() {
   };
 
   const handleCreateBudget = () => {
+    // Check if a total budget already exists for the selected month/year
+    const totalBudgetExists = filteredBudgets.some(b => b.type === 'total');
+    
+    // If a total budget exists, we'll default to creating a category budget
     setCurrentBudget(null);
     setIsModalOpen(true);
   };
@@ -49,15 +53,36 @@ export default function BudgetPage() {
   };
 
   const handleSaveBudget = async (budget: Omit<Budget, 'id' | 'createdAt' | 'updatedAt'>) => {
-    if (budget.type === 'category') {
-      const newSum = sumCategoryBudgets + budget.amount - (currentBudget && currentBudget.type === 'category' ? currentBudget.amount : 0);
-      if (totalBudget > 0 && newSum > totalBudget) {
-        alert('Adding this category budget would exceed the total budget for this period.');
-        return;
-      }
-    }
-    
     try {
+      // Check if trying to add a total budget
+      if (budget.type === 'total') {
+        // Check if we're updating an existing total budget
+        const isUpdating = currentBudget && currentBudget.type === 'total';
+        
+        // If not updating, check if a total budget already exists for this month/year
+        if (!isUpdating) {
+          const existingTotalBudget = filteredBudgets.find(b => 
+            b.type === 'total' && 
+            b.month === budget.month && 
+            b.year === budget.year
+          );
+          
+          if (existingTotalBudget) {
+            alert('A total budget already exists for this month. You can only have one total budget per month.');
+            return;
+          }
+        }
+      }
+      
+      // For category budgets, check if they exceed the total budget
+      if (budget.type === 'category') {
+        const newSum = sumCategoryBudgets + budget.amount - (currentBudget && currentBudget.type === 'category' ? currentBudget.amount : 0);
+        if (totalBudget > 0 && newSum > totalBudget) {
+          alert('Adding this category budget would exceed the total budget for this period.');
+          return;
+        }
+      }
+      
       if (currentBudget) {
         await updateBudget(currentBudget.id, budget);
       } else {
