@@ -76,6 +76,15 @@ export default function CategoriesPage() {
     await deleteCategory(id);
   };
 
+  // Format currency helper
+  const formatCurrency = (amount: number = 0) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(amount);
+  };
+
   return (
     <Layout>
       <div className="p-6">
@@ -137,10 +146,10 @@ export default function CategoriesPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        $0 (0)
+                        {formatCurrency(category.total_expense || 0)} ({category.expense_count || 0})
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        $0 (0)
+                        {formatCurrency(category.total_income || 0)} ({category.income_count || 0})
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
@@ -172,12 +181,10 @@ export default function CategoriesPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {/* Placeholder for total expenses */}
-                        $0.00 (0)
+                        {formatCurrency(0)} (0)
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {/* Placeholder for total income */}
-                        $0.00 (0)
+                        {formatCurrency(0)} (0)
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         {/* No actions for "No Category" */}

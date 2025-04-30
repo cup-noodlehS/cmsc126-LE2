@@ -17,6 +17,12 @@ export interface Category {
   id: number;
   name: string;
   color: string;
+  total_income?: number;
+  income_count?: number;
+  total_expense?: number;
+  expense_count?: number;
+  total_balance?: number;
+  transactions_count?: number;
 }
 
 export interface Budget {

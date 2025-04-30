@@ -8,7 +8,13 @@ import { useAuthStore } from './auth';
 const mapApiToUiCategory = (category: CategoryReadInterface): Category => ({
   id: category.id,
   name: category.name,
-  color: category.hex_color
+  color: category.hex_color,
+  total_income: category.total_income,
+  income_count: category.income_count,
+  total_expense: category.total_expense,
+  expense_count: category.expense_count,
+  total_balance: category.total_balance,
+  transactions_count: category.transactions_count,
 });
 
 // Helper to convert UI type to API type
