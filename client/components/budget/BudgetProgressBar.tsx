@@ -1,14 +1,22 @@
 import React from "react";
 import { Budget, Category } from "../../app/types";
+import { TransactionReadInterface } from "@/lib/types/budgethink";
 
 interface BudgetProgressBarProps {
   totalBudget: number | string;
   categoryBudgets: Budget[];
   categories: Category[];
   remaining: number | string;
+  transactions?: TransactionReadInterface[]; // Optional transactions data
 }
 
-export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, remaining }: BudgetProgressBarProps) {
+export function BudgetProgressBar({ 
+  totalBudget, 
+  categoryBudgets, 
+  categories, 
+  remaining,
+  transactions = [] // Default to empty array
+}: BudgetProgressBarProps) {
   // Parse values to ensure we're working with numbers
   const parsedTotalBudget = typeof totalBudget === 'string' ? parseFloat(totalBudget) : (totalBudget || 0);
   
@@ -24,6 +32,28 @@ export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, re
     });
   };
 
+  // Helper to parse amounts safely
+  const parseAmount = (amount: any): number => {
+    if (typeof amount === 'string') return parseFloat(amount) || 0;
+    return typeof amount === 'number' ? amount : 0;
+  };
+
+  // Calculate spent amounts per category
+  const getSpentAmountByCategory = (categoryId?: number): number => {
+    return transactions
+      .filter(t => 
+        // If categoryId is undefined, sum up transactions without a category
+        (categoryId === undefined ? !t.category : t.category?.id === categoryId) && 
+        t.type === 'expense'
+      )
+      .reduce((sum, t) => sum + parseAmount(t.amount), 0);
+  };
+
+  // Calculate total spent this month (all categories)
+  const totalSpent = transactions
+    .filter(t => t.type === 'expense')
+    .reduce((sum, t) => sum + parseAmount(t.amount), 0);
+
   // Debug values
   console.log('BudgetProgressBar received values:', { 
     totalBudget, 
@@ -33,7 +63,8 @@ export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, re
     }, 0),
     categoryBudgets: categoryBudgets.map(b => b.amount),
     remaining,
-    remainingType: typeof remaining
+    remainingType: typeof remaining,
+    totalSpent
   });
   
   // Safely parse budget amounts accounting for string values
@@ -44,14 +75,19 @@ export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, re
   
   // Calculate actual remaining manually
   const calculatedRemaining = parsedTotalBudget - sumOfCategories;
+  
+  // Calculate actual remaining based on transactions
+  const actualRemaining = parsedTotalBudget - totalSpent;
+  
   console.log('Calculated remaining:', calculatedRemaining);
+  console.log('Actual remaining (based on transactions):', actualRemaining);
 
   // Use the provided remaining or calculate it if it's invalid
   const parsedRemaining = typeof remaining === 'string' ? parseFloat(remaining) : remaining;
-  const actualRemaining = !isNaN(parsedRemaining) ? parsedRemaining : calculatedRemaining;
+  const budgetRemaining = !isNaN(parsedRemaining) ? parsedRemaining : calculatedRemaining;
   
   // Ensure remaining is a valid number
-  const safeRemaining = isNaN(actualRemaining) ? 0 : actualRemaining;
+  const safeRemaining = isNaN(budgetRemaining) ? 0 : budgetRemaining;
   
   // Calculate the width percentage for each category
   const getCategoryColor = (categoryId: number | undefined) => {
@@ -64,16 +100,16 @@ export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, re
     return cat ? cat.name : "Unknown";
   };
 
-  // For this implementation, we'll assume expenses are tracked in a separate system
-  // In a real app, you would fetch transaction data and calculate expenses here
+  // For this implementation, we'll show actual spending from transactions
   const segments = categoryBudgets.map((budget) => {
     // Parse budget amount if it's a string
     const budgetAmount = typeof budget.amount === 'string' ? parseFloat(budget.amount) : (budget.amount || 0);
     const width = parsedTotalBudget > 0 ? (budgetAmount / parsedTotalBudget) * 100 : 0;
     const categoryName = getCategoryName(budget.categoryId);
-    // Placeholder for real expense data
-    const expenses = 0; 
-    const expensePercentage = 0;
+    
+    // Get actual expenses for this category
+    const expenses = getSpentAmountByCategory(budget.categoryId);
+    const expensePercentage = budgetAmount > 0 ? Math.min((expenses / budgetAmount) * 100, 100) : 0;
 
     return {
       key: budget.id,
@@ -103,8 +139,8 @@ export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, re
         </div>
         <div className="text-lg font-bold text-gray-900 dark:text-white">
           Remaining:
-          <span className={`ml-2 text-2xl ${safeRemaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-            {formatCurrency(safeRemaining)}
+          <span className={`ml-2 text-2xl ${actualRemaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+            {formatCurrency(actualRemaining)}
           </span>
         </div>
       </div>
@@ -155,10 +191,9 @@ export function BudgetProgressBar({ totalBudget, categoryBudgets, categories, re
             </div>
             <div className="w-full h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
               <div
-                className="h-full transition-all duration-300"
+                className={`h-full transition-all duration-300 ${seg.expenses > seg.budget ? 'bg-red-500' : seg.color}`}
                 style={{
                   width: `${seg.expensePercentage}%`,
-                  backgroundColor: seg.color,
                 }}
               />
             </div>
