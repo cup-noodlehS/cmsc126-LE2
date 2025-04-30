@@ -10,6 +10,7 @@ import {
 } from "@/app/types";
 import { useAuthStore } from "@/lib/stores/auth";
 import { CategoryReadInterface } from "@/lib/types/budgethink";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 type TransactionType = "all" | "income" | "expense";
 type SortField = "date" | "amount" | "title" | "category";
@@ -36,6 +37,12 @@ export function TransactionsPage() {
   // States for add/edit transaction
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  
+  // States for delete confirmation
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [transactionDetails, setTransactionDetails] = useState<{ title: string; amount: string; date: string } | null>(null);
 
   // Fetch transactions and categories
   useEffect(() => {
@@ -166,19 +173,30 @@ export function TransactionsPage() {
 
   // Handle deleting a transaction
   const handleDeleteTransaction = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this transaction?")) {
-      setLoading(true);
-      
-      try {
-        await TransactionApi.delete(id);
-        // Refresh the transactions list
-        await fetchFilteredTransactions();
-      } catch (error) {
-        console.error("Error deleting transaction:", error);
-      } finally {
-        setLoading(false);
-      }
+    try {
+      setIsDeleting(true);
+      await TransactionApi.delete(id);
+      // Refresh the transactions list
+      await fetchFilteredTransactions();
+      setIsDeleteModalOpen(false);
+      setTransactionToDelete(null);
+      setTransactionDetails(null);
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+    } finally {
+      setIsDeleting(false);
     }
+  };
+  
+  // Handle opening the delete confirmation modal
+  const openDeleteModal = (transaction: Transaction) => {
+    setTransactionToDelete(transaction.id);
+    setTransactionDetails({
+      title: transaction.title,
+      amount: transaction.formatted_amount,
+      date: new Date(transaction.transaction_date).toLocaleDateString()
+    });
+    setIsDeleteModalOpen(true);
   };
 
   return (
@@ -293,7 +311,7 @@ export function TransactionsPage() {
         <TransactionsList 
           transactions={transactions}
           onEdit={handleEditTransaction}
-          onDelete={handleDeleteTransaction}
+          onDelete={openDeleteModal}
         />
       )}
       
@@ -398,33 +416,41 @@ export function TransactionsPage() {
         </div>
       )}
       
-      {/* Add/Edit Transaction Form Dialog */}
+      {/* Transaction Form Modal */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {editingTransaction ? 'Edit Transaction' : 'Add Transaction'}
-              </h2>
-              <button 
-                onClick={() => setIsFormOpen(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            
-            <TransactionForm 
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              {editingTransaction ? 'Edit Transaction' : 'Add Transaction'}
+            </h2>
+            <TransactionForm
               transaction={editingTransaction}
               categories={categories}
               onSave={handleSaveTransaction}
-              onClose={() => setIsFormOpen(false)}
+              onClose={() => {
+                setIsFormOpen(false);
+                setEditingTransaction(null);
+              }}
             />
           </div>
         </div>
       )}
+      
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        title="Delete Transaction"
+        message="Are you sure you want to delete this transaction? This action cannot be undone."
+        itemName={transactionDetails ? `${transactionDetails.title} - ${transactionDetails.amount} (${transactionDetails.date})` : ''}
+        itemType="transaction"
+        onConfirm={() => transactionToDelete && handleDeleteTransaction(transactionToDelete)}
+        onCancel={() => {
+          setIsDeleteModalOpen(false);
+          setTransactionToDelete(null);
+          setTransactionDetails(null);
+        }}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 } 

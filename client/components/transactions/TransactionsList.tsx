@@ -24,7 +24,7 @@ const getContrastTextColor = (hexColor: string): string => {
 export interface TransactionsListProps {
   transactions: Transaction[];
   onEdit: (transaction: Transaction) => void;
-  onDelete?: (id: number) => void;
+  onDelete?: (transaction: Transaction) => void;
 }
 
 export function TransactionsList({ transactions, onEdit, onDelete }: TransactionsListProps) {
@@ -109,7 +109,7 @@ export function TransactionsList({ transactions, onEdit, onDelete }: Transaction
                       </button>
                       {onDelete && (
                         <button
-                          onClick={() => onDelete(transaction.id)}
+                          onClick={() => onDelete(transaction)}
                           className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                         >
                           Delete

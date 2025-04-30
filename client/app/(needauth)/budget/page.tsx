@@ -9,6 +9,7 @@ import { Budget } from "../../types";
 import { BudgetProgressBar } from "../../../components/budget/BudgetProgressBar";
 import { TransactionApi } from "@/lib/stores/budgethink";
 import { TransactionReadInterface } from "@/lib/types/budgethink";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 
 export default function BudgetPage() {
   const { addBudget, updateBudget, deleteBudget, getBudgetsByMonth, fetchBudgets } = useBudgetStore();
@@ -19,6 +20,9 @@ export default function BudgetPage() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear()); // Current year
   const [refreshKey, setRefreshKey] = useState(0); // Used to trigger rerenders
   const [transactions, setTransactions] = useState<TransactionReadInterface[]>([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [budgetToDelete, setBudgetToDelete] = useState<Budget | null>(null);
 
   // Fetch data on component mount and when month/year changes
   useEffect(() => {
@@ -128,12 +132,22 @@ export default function BudgetPage() {
 
   const handleDeleteBudget = async (id: number) => {
     try {
+      setIsDeleting(true);
       await deleteBudget(id);
       refreshData(); // Refresh data after delete
+      setIsDeleteModalOpen(false);
+      setBudgetToDelete(null);
     } catch (error) {
       console.error("Error deleting budget:", error);
       alert("Failed to delete budget. Please try again.");
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const openDeleteModal = (budget: Budget) => {
+    setBudgetToDelete(budget);
+    setIsDeleteModalOpen(true);
   };
 
   const handleMonthChange = (newMonth: number) => {
@@ -474,7 +488,7 @@ export default function BudgetPage() {
                             Edit
                           </button>
                           <button
-                            onClick={() => handleDeleteBudget(budget.id)}
+                            onClick={() => openDeleteModal(budget)}
                             className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                           >
                             Delete
@@ -495,7 +509,7 @@ export default function BudgetPage() {
           </div>
         </div>
 
-        {/* Modal */}
+        {/* Add/Edit Budget Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
@@ -512,6 +526,31 @@ export default function BudgetPage() {
             </div>
           </div>
         )}
+
+        {/* Delete Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          title={`Delete ${budgetToDelete?.type === 'total' ? 'Total' : 'Category'} Budget`}
+          message={
+            budgetToDelete?.type === 'total'
+              ? `Are you sure you want to delete the total budget for ${new Date(2000, budgetToDelete?.month - 1).toLocaleString('default', { month: 'long' })} ${budgetToDelete?.year}?`
+              : `Are you sure you want to delete the budget for ${getCategoryInfo(budgetToDelete?.categoryId).name}?`
+          }
+          itemName={
+            budgetToDelete
+              ? `${formatCurrency(parseAmount(budgetToDelete.amount))} - ${
+                  new Date(2000, budgetToDelete.month - 1).toLocaleString('default', { month: 'long' })
+                } ${budgetToDelete.year}`
+              : ''
+          }
+          itemType="budget"
+          onConfirm={() => budgetToDelete && handleDeleteBudget(budgetToDelete.id)}
+          onCancel={() => {
+            setIsDeleteModalOpen(false);
+            setBudgetToDelete(null);
+          }}
+          isDeleting={isDeleting}
+        />
       </div>
     </Layout>
   );
