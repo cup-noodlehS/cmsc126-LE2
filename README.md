@@ -122,7 +122,6 @@ This project requires running both a frontend and backend server. You'll need tw
 ### 💡 UI/UX Features
 - Responsive layout for all device sizes
 - Persistent sidebar navigation
-- ₱ (PHP) currency formatting throughout application
 - Confirmation modals for destructive actions
 - Consistent design system
 
