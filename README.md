@@ -74,35 +74,57 @@ This project requires running both a frontend and backend server. You'll need tw
 
 ## ✅ Feature List
 
-🔐 User Authentication
-- Register, Login, Logout
-- Session-based data access
+### 🔐 User Authentication
+- Secure register, login, and logout functionality
+- JWT-based authentication with token persistence
+- Protected routes for authenticated users
+- User-specific data access and management
 
-### 💰 Income & Expense Entries
-- Add, Edit, Delete entries
-- Fields: title, amount, date, type, notes
-- List filter, order, and search features
+### 💰 Transaction Management
+- Create, view, edit, and delete income/expense entries
+- Comprehensive transaction details: title, amount, date, type, notes
+- Advanced filtering, sorting, and search capabilities
+- Pagination for better performance with large datasets
 
-### 🗂 Categorization
-- Dropdown category selection
-- Assign category per expense
-- List filter, order, and search features
+### 🗂 Category System
+- Dynamic category creation with custom colors
+- Automatic text color contrast adjustment for readability
+- Interactive category management interface
+- Up to 20 categories per user with usage statistics
+- Color-coded transaction display
 
-### 📅 Monthly Summary
-- Monthly income & expense totals
-- Remaining balance calculation
+### 💵 Budget Management
+- Total budget allocation with remaining balance tracking
+- Category-specific budget allocation within total budget
+- Visual budget progress bars with warning indicators
+- Budget validation to prevent overspending
+- Monthly budget tracking and analysis
 
-### 📊 Dashboard (with Chart.js)
-- Pie chart: Expenses by category
-- Bar graph: Monthly income vs. expenses
-- Recent transactions
+### 📊 Dashboard & Visualization
+- Interactive pie chart displaying expenses by category
+- Multi-month bar graph comparing income vs. expenses
+- Real-time financial summary with key metrics
+- Recent transactions feed with quick access
+- Dynamic date range selection
 
-### 💡 UI & Frontend
-- Responsive layout
-- Navigation bar
+### 📈 Reports & Analytics
+- Comprehensive financial reporting interface
+- Interactive filtering by date range and categories
+- Multiple chart types for different analytical perspectives
+- Detailed spending analysis by category and time period
+- Monthly comparison views
 
-### 🚀 Additional Features
-- CSV export with filters
+### 💱 Data Export
+- CSV export functionality with customizable filters
+- Export transactions, categories, or budget data
+- Filter exports by date range, category, or transaction type
+
+### 💡 UI/UX Features
+- Responsive layout for all device sizes
+- Persistent sidebar navigation
+- ₱ (PHP) currency formatting throughout application
+- Confirmation modals for destructive actions
+- Consistent design system
 
 
 ## Testing
@@ -114,22 +136,51 @@ password: 123
 ```
 
 ## Division of Labor
-### Sheldon
+
+### Sheldon (cup-noodlehS)
 - Backend Development
-    - Set up Django project structure and dependencies
-    - Implemented JWT-based user authentication system
-    - Designed comprehensive database schema for financial transactions
-    - Created Django ORM models with proper relationships and constraints
-    - Developed RESTful API serializers with validation for all data models
-    - Built reusable generic API view classes to standardize CRUD operations
+    - Established Django project structure with authentication system
+    - Designed and implemented comprehensive database models with tests
+    - Created RESTful API endpoints with serializers and validation
+    - Built reusable generic API views for standardized CRUD operations
+    - Implemented search functionality and performance optimizations
+    - Set up admin interface for data management
+    - Created mock data generation scripts for testing
 - Frontend Integration
-    - Implemented secure authentication flow with token persistence
-    - Architected global state management using Context API and custom hooks
-    - Created transaction management interface with real-time backend integration
-    - Developed interactive dashboard components with data visualization
+    - Implemented JWT-based authentication flow with token persistence
+    - Architected global state management using Context API
+    - Built transaction management interface with pagination
+    - Developed dynamic dashboard with real-time data visualization
+    - Created category management system with dynamic color generation
+    - Set up Axios for API communication
+    - Created TypeScript interfaces for type safety
 
-### Anton
--
+### Anton (Panxi793)
+- Budget Management System
+    - Designed and implemented comprehensive budget tracking functionality
+    - Created interactive budget progress bars with visual indicators
+    - Implemented category-specific budget allocations
+    - Added budget validation to prevent overspending
+    - Built budget management UI with forms and summary sections
+- Reports & Analytics
+    - Developed advanced reporting system with interactive charts
+    - Created CSV export functionality with filtering options
+    - Implemented date range and category filtering for reports
+    - Added detailed financial insights and visualizations
+    - Improved UI/UX for the reports page with tabs and better styling
 
-### Jourdan
-- 
+### Jourdan (jourdancatarina3)
+- Frontend & UI Development
+    - Created transaction management interface with filtering
+    - Implemented category management system with color contrast adjustment
+    - Built budget page with real-time transaction integration
+    - Added confirmation modals for destructive actions
+    - Implemented responsive sidebar navigation
+    - Created category usage statistics display
+- Feature Integration
+    - Connected budget tracking with transaction system
+    - Implemented remaining budget calculations and validations
+    - Added category-specific budget validation
+    - Integrated transaction data with budget tracking system
+    - Converted currency display to Philippine Peso (₱)
+    - Fixed authentication and state management issues
