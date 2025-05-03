@@ -162,6 +162,10 @@ This project requires running both a frontend and backend server. You'll need tw
 username: jace
 password: 123
 ```
+### Demo video
+
+https://github.com/user-attachments/assets/b06dc44d-f1eb-4fe1-99df-fa62e27b9dd9
+
 
 ## Division of Labor
 
