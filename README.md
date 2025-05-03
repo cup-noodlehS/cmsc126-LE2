@@ -75,55 +75,84 @@ This project requires running both a frontend and backend server. You'll need tw
 ## ✅ Feature List
 
 ### 🔐 User Authentication
-- Secure register, login, and logout functionality
-- JWT-based authentication with token persistence
-- Protected routes for authenticated users
-- User-specific data access and management
+- Secure JWT-based user registration, login, and session management
+- Protected routes with automatic redirection to login page for unauthenticated users
+- Token persistence across browser sessions with refresh token capability
+- User profile access and management
+- Middleware for secure API request authentication
+- Loading state management during authentication checks
 
 ### 💰 Transaction Management
-- Create, view, edit, and delete income/expense entries
-- Comprehensive transaction details: title, amount, date, type, notes
-- Advanced filtering, sorting, and search capabilities
-- Pagination for better performance with large datasets
+- Create, view, edit, and delete financial transactions
+- Detailed transaction recording with title, amount, date, type (income/expense), category, and description
+- Transaction filtering by type, date range, and category
+- Recent transactions display on dashboard for quick access
+- Sortable transaction list with pagination support
+- Transaction amount validation with minimum value checks
+- Visual differentiation between income and expense entries
+- Transaction search functionality
 
 ### 🗂 Category System
-- Dynamic category creation with custom colors
-- Automatic text color contrast adjustment for readability
-- Interactive category management interface
-- Up to 20 categories per user with usage statistics
-- Color-coded transaction display
+- Create and manage up to 20 custom categories per user
+- Custom color selection with automatic text color contrast adjustment
+- Category usage analytics (transaction count, total amounts)
+- Category filtering in transactions and reports
+- Ability to add new categories directly during transaction creation
+- Color-coded category tags for visual identification in transaction lists
+- Category-specific expense tracking and reporting
+- Foreign key relationships ensuring data integrity
 
 ### 💵 Budget Management
-- Total budget allocation with remaining balance tracking
+- Total monthly budget allocation and tracking
 - Category-specific budget allocation within total budget
-- Visual budget progress bars with warning indicators
-- Budget validation to prevent overspending
-- Monthly budget tracking and analysis
+- Budget progress visualization with color-coded status indicators
+- Budget validation to prevent overspending across categories
+- Real-time budget calculations showing allocated vs. remaining amounts
+- Monthly budget summaries with total budget, total spent, and remaining balance
+- Warning indicators for approaching or exceeding budget limits
+- Budget tracking across multiple months and years
+- Budget-to-actual expenditure comparison
 
 ### 📊 Dashboard & Visualization
-- Interactive pie chart displaying expenses by category
+- Real-time financial summary showing income, expenses, and balance
+- Interactive pie chart displaying expenses by category with custom category colors
 - Multi-month bar graph comparing income vs. expenses
-- Real-time financial summary with key metrics
-- Recent transactions feed with quick access
-- Dynamic date range selection
+- Recent transactions feed with category highlighting
+- Responsive data visualization adapting to screen sizes
+- Dynamic loading states during data fetching
+- Error handling and retry capabilities
+- Summary cards with key financial metrics
 
 ### 📈 Reports & Analytics
-- Comprehensive financial reporting interface
-- Interactive filtering by date range and categories
-- Multiple chart types for different analytical perspectives
-- Detailed spending analysis by category and time period
-- Monthly comparison views
+- Comprehensive financial reporting by month and category
+- Monthly trends analysis with percentage change indicators
+- Savings rate calculation and display
+- Interactive filtering by date range (up to 6 months) and category
+- Detailed breakdowns of spending patterns
+- Multiple visualization types (pie charts, bar graphs, line charts)
+- Month-to-month comparison of financial performance
+- Toggle between summary and detailed views
 
 ### 💱 Data Export
-- CSV export functionality with customizable filters
-- Export transactions, categories, or budget data
-- Filter exports by date range, category, or transaction type
+- CSV export functionality for financial data
+- Customizable exports with filtering by month and category
+- Export formatting for spreadsheet compatibility
+- Comprehensive data inclusion (transactions, monthly summaries, category breakdowns)
+- Automatic filename generation with date and filter information
+- User-friendly export interface with progress indicators
+- Error handling during export process
 
 ### 💡 UI/UX Features
-- Responsive layout for all device sizes
-- Persistent sidebar navigation
+- Responsive design for mobile, tablet, and desktop viewports
+- Dark mode support throughout the application
+- Loading states and indicators during data operations
+- Form validation with helpful error messages
 - Confirmation modals for destructive actions
-- Consistent design system
+- Consistent color coding for income (green) and expenses (red)
+- Philippine Peso (₱) currency formatting
+- User-friendly date selectors and filters
+- Accessible form controls and interactive elements
+- Intuitive navigation between related sections
 
 
 ## Testing
