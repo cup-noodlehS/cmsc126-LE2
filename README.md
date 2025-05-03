@@ -11,36 +11,6 @@
 
 The frontend is built with Next.js and the backend uses Django.
 
-## ✅ Feature To-Do List
-
-🔐 User Authentication
-- [ ] Register, Login, Logout
-- [ ] Session-based data access
-
-### 💰 Income & Expense Entries
-- [ ] Add, Edit, Delete entries
-- [ ] Fields: title, amount, date, type, notes
-
-### 🗂 Categorization
-- [ ] Dropdown category selection
-- [ ] Assign category per expense
-
-### 📅 Monthly Summary
-- [ ] Monthly income & expense totals
-- [ ] Remaining balance calculation
-
-### 📊 Dashboard (with Chart.js)
-- [ ] Pie chart: Expenses by category
-- [ ] Bar graph: Monthly income vs. expenses
-
-### 💡 UI & Frontend
-- [ ] Responsive layout
-- [ ] Navigation bar
-- [ ] Flash messages
-
-### 🚀 Stretch Goals
-- [ ] Budget limits & alerts
-- [ ] CSV export with filters
 
 ## Setup
 This project requires running both a frontend and backend server. You'll need two terminal windows open to run both simultaneously.
@@ -101,8 +71,43 @@ This project requires running both a frontend and backend server. You'll need tw
     > This will start the backend API server at http://localhost:8000.
 
 
+
+## ✅ Feature List
+
+🔐 User Authentication
+- Register, Login, Logout
+- Session-based data access
+
+### 💰 Income & Expense Entries
+- Add, Edit, Delete entries
+- Fields: title, amount, date, type, notes
+- List filter, order, and search features
+
+### 🗂 Categorization
+- Dropdown category selection
+- Assign category per expense
+- List filter, order, and search features
+
+### 📅 Monthly Summary
+- Monthly income & expense totals
+- Remaining balance calculation
+
+### 📊 Dashboard (with Chart.js)
+- Pie chart: Expenses by category
+- Bar graph: Monthly income vs. expenses
+- Recent transactions
+
+### 💡 UI & Frontend
+- Responsive layout
+- Navigation bar
+
+### 🚀 Additional Features
+- CSV export with filters
+
+
 ## Testing
 ### Login credentials
+> User with mock data
 ```
 username: jace
 password: 123
