@@ -140,7 +140,7 @@ password: 123
 ### Sheldon (cup-noodlehS)
 - Backend Development
     - Established Django project structure with authentication system
-    - Designed and implemented comprehensive database models with tests
+    - Designed and implemented comprehensive database models and tests
     - Created RESTful API endpoints with serializers and validation
     - Built reusable generic API views for standardized CRUD operations
     - Implemented search functionality and performance optimizations
@@ -148,7 +148,7 @@ password: 123
     - Created mock data generation scripts for testing
 - Frontend Integration
     - Implemented JWT-based authentication flow with token persistence
-    - Architected global state management using Context API
+    - Architected global state management using Zustand
     - Built transaction management interface with pagination
     - Developed dynamic dashboard with real-time data visualization
     - Created category management system with dynamic color generation
