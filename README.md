@@ -112,3 +112,24 @@ This project requires running both a frontend and backend server. You'll need tw
 username: jace
 password: 123
 ```
+
+## Division of Labor
+### Sheldon
+- Backend Development
+    - Set up Django project structure and dependencies
+    - Implemented JWT-based user authentication system
+    - Designed comprehensive database schema for financial transactions
+    - Created Django ORM models with proper relationships and constraints
+    - Developed RESTful API serializers with validation for all data models
+    - Built reusable generic API view classes to standardize CRUD operations
+- Frontend Integration
+    - Implemented secure authentication flow with token persistence
+    - Architected global state management using Context API and custom hooks
+    - Created transaction management interface with real-time backend integration
+    - Developed interactive dashboard components with data visualization
+
+### Anton
+-
+
+### Jourdan
+- 
