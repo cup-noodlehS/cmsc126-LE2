@@ -99,3 +99,11 @@ This project requires running both a frontend and backend server. You'll need tw
     python src/manage.py runserver
     ```
     > This will start the backend API server at http://localhost:8000.
+
+
+## Testing
+### Login credentials
+```
+username: jace
+password: 123
+```
